@@ -1,0 +1,554 @@
+/* ==========================================================================
+   CSCE 313 handout site - design system
+   --------------------------------------------------------------------------
+   One stylesheet, token driven. Rules of the house:
+     - Every colour is a token. No literal hex outside :root blocks.
+     - Light and dark are both first class; dark is not an afterthought.
+     - Contrast targets: 4.5:1 for all text (WCAG 1.4.3 AA), 3:1 for anything
+       that carries meaning without text - the focus ring above all.
+       Decorative rules and card outlines are deliberately below 3:1: WCAG
+       1.4.11 covers interactive boundaries, and this design has none that a
+       border alone defines. Where a border must be seen, use --border-strong.
+     - Nothing is conveyed by colour alone - links are underlined, states
+       carry a label or an icon as well as a hue.
+     - Type and space come from the scales below, never ad hoc values.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Brand - Texas A&M maroon. 15.7:1 on white, so it carries body-weight text. */
+  --brand:          #500000;   /* 15.7:1 on --bg */
+  --brand-strong:   #3d0000;
+  --brand-wash:     #fbf4f4;
+
+  /* Neutrals */
+  --bg:             #ffffff;
+  --surface:        #f6f6f7;
+  --surface-2:      #eeeef1;
+  --border:         #d9d9de;   /* decorative separator, 1.4:1 - not a UI boundary */
+  --border-strong:  #94949b;   /* 3.0:1 - use where an edge must read */
+  --text:           #17171b;   /* 17.9:1 on --bg */
+  --text-muted:     #55555f;   /* 7.37:1 on --bg - measured, not estimated */
+
+  /* Functional */
+  --focus:          #0b57d0;
+  --note:           #0b57d0;
+  --note-wash:      #eff4fd;
+  --warn:           #8a4b00;
+  --warn-wash:      #fdf5ec;
+
+  /* Type scale - 1.200 minor third, fluid at the top end */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+
+  --fs-xs:   0.8125rem;
+  --fs-sm:   0.9062rem;
+  --fs-base: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --fs-lg:   clamp(1.125rem, 1.08rem + 0.22vw, 1.25rem);
+  --fs-xl:   clamp(1.35rem, 1.25rem + 0.5vw, 1.6rem);
+  --fs-2xl:  clamp(1.65rem, 1.45rem + 1vw, 2.15rem);
+  --fs-3xl:  clamp(2rem, 1.6rem + 2vw, 3rem);
+
+  --lh-tight: 1.2;
+  --lh-snug:  1.35;
+  --lh-body:  1.65;
+
+  /* Space scale - 4px base */
+  --sp-1:  0.25rem;
+  --sp-2:  0.5rem;
+  --sp-3:  0.75rem;
+  --sp-4:  1rem;
+  --sp-5:  1.5rem;
+  --sp-6:  2rem;
+  --sp-7:  2.5rem;
+  --sp-8:  3rem;
+  --sp-9:  4rem;
+
+  /* Measure, radius, shadow */
+  --measure:   68ch;
+  --radius:    8px;
+  --radius-sm: 5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --brand:         #eaa9a9;   /* 9.6:1 on --bg */
+    --brand-strong:  #f6cccc;
+    --brand-wash:    #241618;
+
+    --bg:            #121216;
+    --surface:       #1a1a20;
+    --surface-2:     #23232b;
+    --border:        #33333d;
+    --border-strong: #616168;   /* 3.0:1 on --bg */
+    --text:          #ededf2;
+    --text-muted:    #a6a6b3;
+
+    --focus:         #8ab4ff;
+    --note:          #8ab4ff;
+    --note-wash:     #161c2b;
+    --warn:          #e5b170;
+    --warn-wash:     #2a2015;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset and base
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--sp-6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-wrap: break-word;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+/* Keyboard focus. Never removed - only restyled. */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+.skip-link {
+  position: absolute;
+  left: var(--sp-2);
+  top: var(--sp-2);
+  z-index: 100;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--bg);
+  color: var(--text);
+  border: 2px solid var(--focus);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-150%);
+}
+.skip-link:focus { transform: translateY(0); }
+
+main:focus { outline: none; }
+
+/* --------------------------------------------------------------------------
+   3. Layout
+   -------------------------------------------------------------------------- */
+.wrap {
+  width: 100%;
+  max-width: 78rem;
+  margin-inline: auto;
+  padding-inline: clamp(var(--sp-4), 4vw, var(--sp-8));
+}
+
+main.wrap { padding-block: var(--sp-7) var(--sp-9); }
+
+/* Prose column: text stays at a readable measure, wide things break out. */
+.prose > * { max-width: var(--measure); }
+.prose > .full-bleed,
+.prose > .table-scroll,
+.prose > .toc { max-width: none; }
+
+/* Figures get more room than the text measure, but are never full-bleed. */
+.prose > figure { max-width: min(100%, 52rem); }
+
+/* --------------------------------------------------------------------------
+   4. Site chrome
+   -------------------------------------------------------------------------- */
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2) var(--sp-5);
+  padding-block: var(--sp-4);
+}
+.site-header__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  color: inherit;
+}
+.site-header__course {
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-tight);
+  color: var(--brand);
+  letter-spacing: -0.01em;
+}
+.site-header__tagline {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.site-header__brand:hover .site-header__course { text-decoration: underline; }
+
+.breadcrumb { margin-left: auto; font-size: var(--fs-sm); }
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.breadcrumb li + li::before {
+  content: "/";
+  margin-right: var(--sp-2);
+  color: var(--border-strong);
+}
+.breadcrumb [aria-current="page"] { color: var(--text-muted); }
+
+.site-footer {
+  margin-top: var(--sp-9);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  padding-block: var(--sp-6);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+.site-footer p { margin: 0 0 var(--sp-1); }
+.site-footer__meta { font-size: var(--fs-xs); }
+
+/* --------------------------------------------------------------------------
+   5. Typography
+   -------------------------------------------------------------------------- */
+h1, h2, h3, h4 {
+  line-height: var(--lh-tight);
+  letter-spacing: -0.015em;
+  font-weight: 700;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+h1 { font-size: var(--fs-3xl); margin: 0 0 var(--sp-4); }
+h2 {
+  font-size: var(--fs-2xl);
+  margin: var(--sp-8) 0 var(--sp-3);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border);
+}
+h3 { font-size: var(--fs-xl);  margin: var(--sp-6) 0 var(--sp-2); }
+h4 { font-size: var(--fs-lg);  margin: var(--sp-5) 0 var(--sp-2); line-height: var(--lh-snug); }
+
+p, ul, ol, dl { margin: 0 0 var(--sp-4); }
+ul, ol { padding-left: var(--sp-5); }
+li { margin-bottom: var(--sp-2); }
+li > ul, li > ol { margin-top: var(--sp-2); }
+
+strong { font-weight: 650; }
+
+a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+}
+a:hover {
+  color: var(--brand-strong);
+  text-decoration-thickness: 2px;
+}
+
+hr {
+  margin: var(--sp-8) 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* --------------------------------------------------------------------------
+   6. Code
+   -------------------------------------------------------------------------- */
+code, kbd, samp, pre { font-family: var(--font-mono); }
+
+code {
+  font-size: 0.9em;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.12em 0.35em;
+}
+
+pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--sp-4);
+  overflow-x: auto;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  margin: 0 0 var(--sp-5);
+}
+pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+}
+pre:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+kbd {
+  font-size: 0.85em;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  padding: 0.1em 0.4em;
+}
+
+/* --------------------------------------------------------------------------
+   7. Tables - scrollable region, keyboard reachable (see enhance.js)
+   -------------------------------------------------------------------------- */
+.table-scroll {
+  overflow-x: auto;
+  margin: 0 0 var(--sp-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.table-scroll:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* A table is never clipped to the prose measure. */
+.prose > table { max-width: none; }
+
+/* Without JavaScript there is no wrapper to scroll, so the table scrolls
+   itself. This costs some table semantics in assistive tech, which is why it
+   is scoped to .no-js only - the alternative is a page that scrolls sideways
+   on a phone, which fails every reader rather than some. */
+html.no-js .prose > table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+caption {
+  caption-side: top;
+  text-align: left;
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+th, td {
+  padding: var(--sp-3) var(--sp-4);
+  text-align: left;              /* left aligned, always - centred data is harder to scan */
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+thead th {
+  background: var(--surface-2);
+  font-weight: 650;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: var(--surface); }
+td code { white-space: nowrap; }
+
+/* --------------------------------------------------------------------------
+   8. Figures
+   -------------------------------------------------------------------------- */
+figure {
+  margin: 0 0 var(--sp-6);
+}
+
+/* Never upscale a screenshot past its natural size - a 428px dialog stretched
+   to 1200px is blurry and swallows the viewport. Bounding height as well stops
+   a tall capture from filling the screen on a laptop. */
+figure img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 78vh;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+/* Diagrams are vector, so they may fill the figure width. */
+figure.diagram { max-width: min(100%, 46rem); }
+figure.diagram svg { width: 100%; height: auto; display: block; }
+figcaption {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   9. Components
+   -------------------------------------------------------------------------- */
+
+/* Lab header block */
+.lab-head { margin-bottom: var(--sp-6); }
+.lab-head__eyebrow {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.lab-head__title { margin: 0 0 var(--sp-3); }
+.lab-head__course { margin: 0 0 var(--sp-1); font-size: var(--fs-lg); color: var(--text); }
+.lab-head__byline { margin: 0 0 var(--sp-5); color: var(--text-muted); font-size: var(--fs-sm); }
+
+.lab-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin: 0;
+  max-width: none;
+}
+.lab-dates__item {
+  flex: 1 1 14rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  padding: var(--sp-3) var(--sp-4);
+}
+.lab-dates__item--due { border-left-color: var(--brand); background: var(--brand-wash); }
+.lab-dates dt {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--sp-1);
+}
+.lab-dates dd { margin: 0; font-size: var(--fs-base); }
+
+/* Callouts */
+.callout {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--note);
+  border-radius: var(--radius-sm);
+  background: var(--note-wash);
+  padding: var(--sp-4) var(--sp-5);
+  margin: 0 0 var(--sp-6);
+}
+.callout__title {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--note);
+  border: 0;
+  padding: 0;
+}
+.callout > :last-child { margin-bottom: 0; }
+
+/* Both variants state their own colours. The base above happens to match the
+   note palette, but relying on that would mean a change to .callout silently
+   restyles every note callout, so --note is repeated here on purpose. */
+.callout--note { border-left-color: var(--note); background: var(--note-wash); }
+.callout--note .callout__title { color: var(--note); }
+.callout--warn { border-left-color: var(--warn); background: var(--warn-wash); }
+.callout--warn .callout__title { color: var(--warn); }
+
+/* Table of contents */
+.toc {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: var(--sp-4) var(--sp-5);
+  margin: 0 0 var(--sp-7);
+}
+.toc__heading {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border: 0;
+  padding: 0;
+}
+.toc ol, .toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 2;
+  column-gap: var(--sp-6);
+}
+.toc li { margin-bottom: var(--sp-2); break-inside: avoid; font-size: var(--fs-sm); }
+.toc ol ol, .toc ul ul { columns: 1; padding-left: var(--sp-4); margin-top: var(--sp-2); }
+.toc a { color: var(--text); text-decoration-color: var(--border-strong); }
+.toc a:hover { color: var(--brand); }
+@media (max-width: 40rem) {
+  .toc ol, .toc ul { columns: 1; }
+}
+
+/* Lab index table on the home page */
+.lab-list { margin-bottom: var(--sp-6); }
+
+/* Heading permalinks (added by enhance.js) */
+.heading-anchor {
+  margin-left: var(--sp-2);
+  font-size: 0.7em;
+  color: var(--text-muted);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 120ms ease-in-out;
+}
+h2:hover .heading-anchor,
+h3:hover .heading-anchor,
+.heading-anchor:focus-visible { opacity: 1; }
+
+/* --------------------------------------------------------------------------
+   10. Print
+   -------------------------------------------------------------------------- */
+@media print {
+  .site-header, .site-footer, .toc, .skip-link, .heading-anchor { display: none; }
+  body { font-size: 10.5pt; color: #000; background: #fff; }
+  .prose > * { max-width: none; }
+  a { text-decoration: underline; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.85em; word-break: break-all; }
+  pre, figure, .table-scroll, .callout { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+}
+
+/* A diagram shrunk to phone width becomes unreadable, so below a floor it
+   scrolls sideways instead - the same bargain the wide tables make.
+   enhance.js makes an overflowing wrapper keyboard reachable. */
+.diagram-scroll { overflow-x: auto; }
+.diagram-scroll svg { min-width: 30rem; }
+.diagram-scroll:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+figure.diagram--wide .diagram-scroll svg { min-width: 34rem; }

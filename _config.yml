@@ -1,0 +1,25 @@
+title: CSCE 313
+description: Introduction to Computer Systems — Fall 2026
+
+lang: en
+
+# No remote theme. Layouts in _layouts/ and the design tokens in
+# assets/css/main.css are the whole design system - keeping it local means
+# a GitHub Pages build cannot silently restyle a handout mid-semester.
+
+markdown: kramdown
+kramdown:
+  auto_ids: true          # stable heading anchors for deep links
+  toc_levels: 2..3        # section + subsection only; task lists stay out of the TOC
+  syntax_highlighter: rouge
+
+sass:
+  style: compressed
+
+exclude:
+  - README.md
+  - LAB-TEMPLATE.md
+  - tools
+  - Gemfile
+  - Gemfile.lock
+  - vendor

@@ -1,0 +1,29 @@
+---
+layout: base
+---
+<article class="prose lab">
+
+  <header class="lab-head">
+    <p class="lab-head__eyebrow">Lab {{ page.lab_number }}</p>
+    <h1 class="lab-head__title">{{ page.lab_title | default: page.title }}</h1>
+    <p class="lab-head__course">{{ page.course }}</p>
+    <p class="lab-head__byline">{{ page.term }}{% if page.instructor %} · Instructor: {{ page.instructor }}{% endif %}</p>
+
+    <dl class="lab-dates">
+      {% if page.released %}
+      <div class="lab-dates__item">
+        <dt>Released</dt>
+        <dd>{{ page.released }}</dd>
+      </div>
+      {% endif %}
+      {% if page.due %}
+      <div class="lab-dates__item lab-dates__item--due">
+        <dt>Due</dt>
+        <dd><strong>{{ page.due }}</strong></dd>
+      </div>
+      {% endif %}
+    </dl>
+  </header>
+
+  {{ content }}
+</article>
