@@ -422,28 +422,52 @@ crash point.
 
 Log in with user ID `1`. The program dies almost immediately.
 
+First watch the recursion happen. Break on the function and log in as user `1`:
+
 ```console
 (gdb) break Bank::login
 (gdb) run
 ```
 
-Continue past the breakpoint several times and watch the argument change, then
-look at the stack:
+Choose `1` and enter user ID `1`. You stop on entry to `Bank::login`. Continue a
+few times and watch the argument:
 
 ```console
-(gdb) backtrace full
+(gdb) continue
+(gdb) continue
+(gdb) continue
 ```
 
-The stack is thousands of frames of the same function, each one calling itself
-with a different account ID. The exact depth reached before the stack runs out
-depends on your machine's stack limit, so do not expect a particular number —
+Each stop reports a larger `id` — 1, then 2, then 3 — so the function is calling
+itself with a new account each time and never returning.
+
+You will not reach the crash this way: the breakpoint stops execution at every
+level, and there are more levels than you could continue through by hand. So
+remove the breakpoint and let it run:
+
+```console
+(gdb) delete 1
+(gdb) continue
+```
+
+Now it crashes. The stack is far too large to print in full, so ask for the
+oldest frames only:
+
+```console
+(gdb) bt -12
+```
+
+`bt -12` shows the last twelve frames rather than the first. You will see the
+`id` counting *down* toward 1 and finally `main` — the bottom of the recursion,
+with tens of thousands of identical frames stacked above it. The exact depth
+depends on your machine's stack limit, so do not expect a particular number;
 what matters is the repeating frame pattern and that it does not terminate.
 
 Note that logging in as user `0` does not trigger this, which is a clue about
 the condition guarding the recursive call.
 
-Save the transcript as **`part-2-task-2.txt`**, showing the crash and the repeated recursive
-frames.
+Save the transcript as **`part-2-task-2.txt`**, showing the `id` climbing at the
+breakpoint, the crash after you delete it, and the repeated recursive frames.
 
 ### 5.3 Task 3 — Buffer overflow in addTransaction
 
@@ -692,6 +716,7 @@ Changes made to this handout after release are listed here, newest first.
 
 | Date | Change |
 | --- | --- |
+| August 25, 2026 | Corrected §5.2: with a breakpoint set the program never reaches the crash, so the task now deletes the breakpoint before continuing, and uses `bt -12` to show the oldest frames. |
 | August 25, 2026 | Added a graded leak-check transcript (§5.6, deliverable 13). Reduced `MAX_ACCOUNTS` in part-2 so the program uses ~42 MB rather than ~394 MB; Task 2 is unaffected. |
 | August 25, 2026 | Deliverables are now plain-text transcripts rather than screenshots (§3.6, §6). Added §5.6 on `-Weffc++` and AddressSanitizer. Setup now points at classroom50. Corrected `x/32x` to `x/32xb` in §5.4, which reads 32 bytes rather than 32 words. |
 | August 25, 2026 | Initial release for Fall 2026. Migrated from Google Docs. |
