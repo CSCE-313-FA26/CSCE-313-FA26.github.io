@@ -30,6 +30,10 @@ By the end of this lab you will be able to:
 5. Interrupt a running program and take control of it in the debugger.
 6. Diagnose and repair uninitialized memory, runaway recursion, buffer
    overflow, memory leaks, and an invalid `delete`.
+7. Recognise the Rule of Three: why a class that owns raw memory must define how
+   it is created, copied, and destroyed, and what breaks when it does not.
+8. Use compiler warnings and AddressSanitizer to find memory faults that a
+   debugger alone would not reveal.
 
 ## 2. Background
 
@@ -96,11 +100,12 @@ bytes from `&v` in hex, and `x/6xw &v` reads the same region as six words.
 
 ### 3.1 Accept the assignment
 
-Accept the assignment on GitHub Classroom:
+Accept the assignment on [classroom50](https://classroom50.org/):
 
-<https://classroom.github.com/a/oMsgpTTQ>
+<!-- TODO(instructor): replace with the classroom50 assignment link for Lab 1 -->
+**Assignment link — to be posted on Discord and Canvas.**
 
-Classroom creates a private repository for you in the course organization. Clone
+Accepting creates a private repository for you in the course organization. Clone
 it:
 
 ```bash
@@ -114,7 +119,7 @@ cd <your-repository>
 | --- | --- |
 | `part-1/` | The working program: `main.cpp`, `bank.cpp`, `types.h`, `Makefile` |
 | `part-2/` | The defective program: same four files, different contents |
-| `deliverables/` | Where your screenshots go |
+| `deliverables/` | Where your session transcripts go |
 
 ### 3.3 Build the program
 
@@ -137,7 +142,10 @@ error means something is wrong before you have started debugging — fix it firs
 <h2 class="callout__title" id="rebuild-heading">Rebuild after every edit</h2>
 <p>GDB runs the executable, not your source. If you edit a file and do not run
 <code>make</code> again, you are debugging the previous build and your change
-appears to have done nothing. When in doubt,
+appears to have done nothing — the single most common way to lose an afternoon
+on this lab.</p>
+<p>The <code>Makefile</code> lists <code>types.h</code> as a prerequisite, so
+editing it does trigger a rebuild. If you ever suspect otherwise, settle it with
 <code>make clean &amp;&amp; make</code>.</p>
 </aside>
 
@@ -160,6 +168,48 @@ your `~/.gdbinit`.
 Each task below assumes a clean session. Leftover breakpoints and watchpoints
 from a previous task will change what you see and make your output hard to
 grade. Quit with `q` and start GDB again for each task.
+
+### 3.6 Record each task as a transcript
+
+Every task below asks you to save its output. You submit **plain-text
+transcripts**, not screenshots. A transcript is easier for you to check before
+submitting, it can be searched and diffed, and nothing is lost to a bad crop or
+an unreadable font.
+
+Use `script`, which records everything that appears in your terminal — the
+program's own output, the commands you type, and GDB's replies:
+
+```bash
+script -q deliverables/part-1-task-1.txt
+gdb ./banking-system
+# ...carry out the task...
+(gdb) quit
+exit
+```
+
+The first command starts recording and the final `exit` stops it. Check the file
+before moving on:
+
+```bash
+cat deliverables/part-1-task-1.txt
+```
+
+<aside class="callout callout--note" aria-labelledby="script-heading">
+<h2 class="callout__title" id="script-heading">Two things to know about `script`</h2>
+<p>You must run <code>exit</code> at the end, or the file stays incomplete.
+And because <code>script</code> records a real terminal, the file may contain a
+few stray control characters; that is expected and does not need cleaning up.</p>
+</aside>
+
+An alternative, if you prefer GDB to do the recording, captures GDB's side only
+— the program's own menus and prompts will be missing, so `script` is the better
+choice for this lab:
+
+```console
+(gdb) set trace-commands on
+(gdb) set logging file deliverables/part-1-task-1.txt
+(gdb) set logging enabled on
+```
 
 ## 4. Walkthrough
 
@@ -188,7 +238,7 @@ in scope. `ptype` prints the structure of the type; `print` prints the value of
 one element. A freshly constructed account reads `id = -1`, `balance = 0`,
 `active = false`.
 
-Save this output as **`part-1-task-1.png`**.
+Save the transcript as **`part-1-task-1.txt`**.
 
 ### 4.2 Task 2 — Several breakpoints, and watching a variable
 
@@ -206,7 +256,7 @@ $ gdb ./banking-system
 `in Bank::login(int)`. Naming a function by its file and line is useful when a
 name is ambiguous or you want a specific overload.
 
-Save this output as **`part-1-task-2-1.png`**.
+Save the transcript as **`part-1-task-2-1.txt`**.
 
 Now watch the loop control variable and let the program run.
 
@@ -221,7 +271,7 @@ program the moment its value changes, reporting the old and new values — so
 choosing `Exit` from the menu will stop you at the assignment that ends the
 loop, without your having guessed which line that was.
 
-Save this output as **`part-1-task-2-2.png`**.
+Save the transcript as **`part-1-task-2-2.txt`**.
 
 ### 4.3 Task 3 — Stepping and examining memory
 
@@ -239,7 +289,7 @@ $ gdb ./banking-system
 `step` enters `print_menu()`; `list` shows the surrounding source; `finish` runs
 to the end of the function and returns you to the caller.
 
-Save this output as **`part-1-task-3-1.png`**.
+Save the transcript as **`part-1-task-3-1.txt`**.
 
 Now read the same object three different ways to see how it is laid out.
 
@@ -254,7 +304,7 @@ words, and the third asks GDB to interpret those bytes as an `Account`. Compare
 them: the field boundaries, the padding the compiler inserted, and the byte
 order are all visible in the raw views but hidden by the structured one.
 
-Save this output as **`part-1-task-3-2.png`**.
+Save the transcript as **`part-1-task-3-2.txt`**.
 
 ### 4.4 Task 4 — Reading a call stack
 
@@ -279,7 +329,7 @@ At the menu, choose `1` to log in, then enter user ID `0`. GDB stops on entry to
 the local variables of each frame, so you can see `id`, `choice`, the whole
 `bank` object, and `running` in `main`'s frame.
 
-Save this output as **`part-1-task-4.png`**.
+Save the transcript as **`part-1-task-4.txt`**.
 
 ### 4.5 Task 5 — Interrupting a running program
 
@@ -317,10 +367,10 @@ You will stop at line 76. Now watch the balance and step until it changes:
 ```
 
 Keep issuing `next` until the watchpoint fires and reports the old and new
-balance. Your screenshot must include the watchpoint output — stopping before it
+balance. Your transcript must include the watchpoint output — stopping before it
 triggers is the most common way to lose points on this task.
 
-Save this output as **`part-1-task-5.png`**.
+Save the transcript as **`part-1-task-5.txt`**.
 
 ## 5. To-do
 
@@ -363,7 +413,7 @@ such path in `types.h`. If you fix only the first one you find, the program will
 crash in exactly the same way — that is the signal that you have not found them
 all.
 
-Save as **`part-2-task-1.png`**, showing the crash and the backtrace at the
+Save the transcript as **`part-2-task-1.txt`**, showing the crash and the backtrace at the
 crash point.
 
 ### 5.2 Task 2 — Runaway recursion in login
@@ -390,7 +440,7 @@ what matters is the repeating frame pattern and that it does not terminate.
 Note that logging in as user `0` does not trigger this, which is a clue about
 the condition guarding the recursive call.
 
-Save as **`part-2-task-2.png`**, showing the crash and the repeated recursive
+Save the transcript as **`part-2-task-2.txt`**, showing the crash and the repeated recursive
 frames.
 
 ### 5.3 Task 3 — Buffer overflow in addTransaction
@@ -418,7 +468,7 @@ of the exercise.
 
 Add the bounds check that prevents the out-of-range write.
 
-Save as **`part-2-task-3.png`**, showing the GDB output at the overflow and the
+Save the transcript as **`part-2-task-3.txt`**, showing the GDB output at the overflow and the
 values of `transactionCount` and `MAX_TRANSACTIONS`.
 
 ### 5.4 Task 4 — Memory leak in the transaction descriptions
@@ -453,14 +503,14 @@ After three deposits, compare all three descriptions and their addresses:
 (gdb) p/x transactions[0].description
 (gdb) p/x transactions[1].description
 (gdb) p/x transactions[2].description
-(gdb) x/32x &transactions[0]
+(gdb) x/32xb &transactions[0]
 ```
 
 Every description sits at its own address, and none of those allocations is ever
 released. Fix the ownership: whatever allocates must also free, and the array of
 transactions itself needs releasing too.
 
-Save as **`part-2-task-4.png`**, showing the several transaction descriptions and
+Save the transcript as **`part-2-task-4.txt`**, showing the several transaction descriptions and
 the memory examination of the transaction array.
 
 ### 5.5 Task 5 — Invalid delete in logout
@@ -483,50 +533,126 @@ it points at, and whether `delete` is entitled to free it.
 <h2 class="callout__title" id="delete-heading">Read the abort message</h2>
 <p>The exact wording the C library prints tells you which rule was broken, and
 it is not the same message you would get for freeing the same pointer twice. Put
-that message in your screenshot.</p>
+that message in your transcript.</p>
 </aside>
 
-Save as **`part-2-task-5.png`**, showing the abort and the examination of
+Save the transcript as **`part-2-task-5.txt`**, showing the abort and the examination of
 `current_account`.
+
+### 5.6 Cross-check your work with the compiler
+
+GDB is a microscope: it shows you what a program is doing once you know roughly
+where to look. Two other tools work the other way round — they find the problem
+and hand you the location. Neither replaces the debugging you just did, but
+knowing they exist will save you hours later in this course.
+
+**Ask the compiler about your class design.** From `part-2`, on the code as it
+shipped:
+
+```bash
+g++ -std=c++17 -Weffc++ -c bank.cpp -o /dev/null
+```
+
+Among the warnings you will see:
+
+```console
+warning: 'class Account' has pointer data members [-Weffc++]
+warning:   but does not declare 'Account(const Account&)' [-Weffc++]
+warning: 'Account::transactions' should be initialized in the member
+         initialization list [-Weffc++]
+```
+
+Those two warnings describe Tasks 1, 4 and 5 between them. They are all the same
+underlying problem: **a class that owns raw memory must say what happens when it
+is created, copied, and destroyed.** In C++ that expectation has a name — the
+*Rule of Three* — and a class with a raw pointer member that declares none of
+those three operations is almost always broken in the ways you just debugged.
+
+**Ask the runtime to check every memory access.** Rebuild with
+AddressSanitizer and run the program the same way you did in Task 1:
+
+```bash
+g++ -std=c++17 -g -fsanitize=address,leak -o banking-asan main.cpp bank.cpp
+./banking-asan
+```
+
+On the unfixed code, instead of a bare "Segmentation fault" you get the fault
+classified and located:
+
+```console
+ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000
+    #0 ... in Account::addTransaction(double, char const*) types.h:56
+```
+
+`0x000000000000` is the giveaway: the program followed a null pointer, which is
+exactly the uninitialized `transactions` array from Task 1.
+
+The same build also settles Task 4, which GDB could only ever hint at. Looking
+at addresses in the debugger shows you allocations happening; it cannot show you
+that they were never released. LeakSanitizer states it outright — run the
+program, log in, make two deposits, and exit:
+
+```console
+ERROR: LeakSanitizer: detected memory leaks
+SUMMARY: AddressSanitizer: 112 byte(s) leaked in 4 allocation(s).
+```
+
+When your Task 4 fix is right, that summary disappears. That is proof; the
+address listing in §5.4 is only evidence.
+
+<aside class="callout callout--note" aria-labelledby="sanitizer-heading">
+<h2 class="callout__title" id="sanitizer-heading">Not a deliverable</h2>
+<p>Nothing in this section is submitted. It is here because these two commands
+will find more bugs in your own code, faster, than any amount of stepping — and
+because <code>-fsanitize=address</code> is how this class of bug is found in
+practice.</p>
+</aside>
 
 ## 6. Deliverables
 
-Commit and push everything to your assignment repository. Screenshots go in the
+Commit and push everything to your assignment repository. Transcripts go in the
 `deliverables/` directory, named **exactly** as listed — they are checked by
 name, and a mis-named file is a missing file.
 
-Screenshot tools do not name files this way on their own. Take the screenshot,
-then rename it before committing.
+If you record straight into `deliverables/` as shown in §3.6, the names are
+already right. Check them with `ls deliverables/` before you push.
 
 | # | Path | Contents |
 | --- | --- | --- |
-| 1 | `deliverables/part-1-task-1.png` | Task 1 — `ptype` and the first account |
-| 2 | `deliverables/part-1-task-2-1.png` | Task 2 — the three breakpoints |
-| 3 | `deliverables/part-1-task-2-2.png` | Task 2 — the watchpoint firing |
-| 4 | `deliverables/part-1-task-3-1.png` | Task 3 — step, list, finish |
-| 5 | `deliverables/part-1-task-3-2.png` | Task 3 — the three views of memory |
-| 6 | `deliverables/part-1-task-4.png` | Task 4 — backtrace and `bt full` |
-| 7 | `deliverables/part-1-task-5.png` | Task 5 — interrupt and watchpoint output |
-| 8 | `deliverables/part-2-task-1.png` | Part 2 Task 1 — crash and backtrace |
-| 9 | `deliverables/part-2-task-2.png` | Part 2 Task 2 — recursive frames |
-| 10 | `deliverables/part-2-task-3.png` | Part 2 Task 3 — overflow and counters |
-| 11 | `deliverables/part-2-task-4.png` | Part 2 Task 4 — descriptions and memory |
-| 12 | `deliverables/part-2-task-5.png` | Part 2 Task 5 — abort and pointer |
+| 1 | `deliverables/part-1-task-1.txt` | Task 1 — `ptype` and the first account |
+| 2 | `deliverables/part-1-task-2-1.txt` | Task 2 — the three breakpoints |
+| 3 | `deliverables/part-1-task-2-2.txt` | Task 2 — the watchpoint firing |
+| 4 | `deliverables/part-1-task-3-1.txt` | Task 3 — step, list, finish |
+| 5 | `deliverables/part-1-task-3-2.txt` | Task 3 — the three views of memory |
+| 6 | `deliverables/part-1-task-4.txt` | Task 4 — backtrace and `bt full` |
+| 7 | `deliverables/part-1-task-5.txt` | Task 5 — interrupt and watchpoint output |
+| 8 | `deliverables/part-2-task-1.txt` | Part 2 Task 1 — crash and backtrace |
+| 9 | `deliverables/part-2-task-2.txt` | Part 2 Task 2 — recursive frames |
+| 10 | `deliverables/part-2-task-3.txt` | Part 2 Task 3 — overflow and counters |
+| 11 | `deliverables/part-2-task-4.txt` | Part 2 Task 4 — descriptions and memory |
+| 12 | `deliverables/part-2-task-5.txt` | Part 2 Task 5 — abort and pointer |
 | 13 | `part-2/bank.cpp` | Your corrected source |
 | 14 | `part-2/types.h` | Your corrected source |
 
 Your corrected `part-2` must build with `make` and run without crashing on the
-paths above.
+paths above. Before pushing, confirm it from a clean state:
+
+```bash
+cd part-2
+make clean && make
+```
 
 ### 6.1 Mistakes that cost points
 
 1. Not restarting GDB between tasks, so stale breakpoints appear in the output.
-2. Screenshots not named exactly as the table requires.
-3. In Part 1 Task 5, stopping before the watchpoint fires, so the output does
+2. Transcripts not named exactly as the table requires.
+3. Forgetting to run `exit` at the end of a `script` session, which leaves the
+   transcript truncated. Always `cat` the file before you push it.
+4. In Part 1 Task 5, stopping before the watchpoint fires, so the output does
    not show the balance changing.
-4. In Part 2 Task 2, not continuing far enough for the backtrace to show the
+5. In Part 2 Task 2, not continuing far enough for the backtrace to show the
    recursion.
-5. Editing source without rebuilding, so GDB keeps running the old executable.
+6. Editing source without rebuilding, so GDB keeps running the old executable.
 
 ## 7. Getting help
 
@@ -548,4 +674,5 @@ Changes made to this handout after release are listed here, newest first.
 
 | Date | Change |
 | --- | --- |
+| August 25, 2026 | Deliverables are now plain-text transcripts rather than screenshots (§3.6, §6). Added §5.6 on `-Weffc++` and AddressSanitizer. Setup now points at classroom50. Corrected `x/32x` to `x/32xb` in §5.4, which reads 32 bytes rather than 32 words. |
 | August 25, 2026 | Initial release for Fall 2026. Migrated from Google Docs. |

@@ -20,7 +20,7 @@ description: "One sentence describing the lab, used for search results and link 
      in this order, even when a section is short.
 
      WHY THIS PAGE AND NOT THE STARTER REPO
-       GitHub Classroom copies a starter repo at the moment a student
+       The classroom platform copies a starter repo at the moment a student
        accepts. Anything committed there is a snapshot - editing it later
        only changes what future accepters receive. This page has one stable
        URL, so a correction reaches everyone, including early accepters.
@@ -52,9 +52,10 @@ description: "One sentence describing the lab, used for search results and link 
          the instructions as written. If a step lets the student choose
          something that changes the number, either pin the choice here or
          state the expectation as an invariant instead of a literal.
-       - Deliverable filenames are graded literally, so only require a name
-         the student can actually produce. Screenshot tools name their own
-         files; ask the student to rename, and say so explicitly.
+       - Deliverables are plain-text transcripts captured with script(1),
+         never screenshots: they can be searched, diffed and checked by the
+         student before submitting. Filenames are graded literally, so have
+         the student record straight into deliverables/ under the right name.
        - Any change after release adds a row to the revision history.
      ===================================================================== -->
 
@@ -93,7 +94,8 @@ What must already be installed or configured.
 
 ### 3.2 Accept the assignment
 
-Accept the GitHub Classroom assignment, then clone your repository.
+Accept the assignment on [classroom50](https://classroom50.org/), then clone
+your repository.
 
 ```bash
 git clone https://github.com/CSCE-313-FA26/<your-repo>.git

@@ -36,8 +36,8 @@ confirmed on each lab's handout when it is released.
 
 ## How labs are submitted
 
-- Accept the assignment on **GitHub Classroom**, then commit and push your work
-  to the repository it creates for you.
+- Accept the assignment on **[classroom50](https://classroom50.org/)**, then
+  commit and push your work to the repository it creates for you.
 - Labs are also submitted on **Gradescope**, by 11:59 PM on the due date.
 - **Late work is not accepted.** You have one one-time pass, good for a 24-hour
   extension on a single lab, requested through the form linked in the syllabus.
