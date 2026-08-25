@@ -102,13 +102,12 @@ bytes from `&v` in hex, and `x/6xw &v` reads the same region as six words.
 
 ### 3.1 Accept the assignment
 
-Accept the assignment on [classroom50](https://classroom50.org/):
+Accept the assignment on classroom50:
 
-<!-- TODO(instructor): replace with the classroom50 assignment link for Lab 1 -->
-**Assignment link — to be posted on Discord and Canvas.**
+<https://classroom50.org/CSCE-313-FA26/csce-313-fa26/assignments/lab-1/accept>
 
-Accepting creates a private repository for you in the course organization. Clone
-it:
+You will need to be signed in. Accepting creates a private repository for you in
+the course organization. Clone it:
 
 ```bash
 git clone https://github.com/CSCE-313-FA26/<your-repository>.git
@@ -716,6 +715,7 @@ Changes made to this handout after release are listed here, newest first.
 
 | Date | Change |
 | --- | --- |
+| August 25, 2026 | §3.1 now carries the classroom50 assignment link. |
 | August 25, 2026 | Corrected §5.2: with a breakpoint set the program never reaches the crash, so the task now deletes the breakpoint before continuing, and uses `bt -12` to show the oldest frames. |
 | August 25, 2026 | Added a graded leak-check transcript (§5.6, deliverable 13). Reduced `MAX_ACCOUNTS` in part-2 so the program uses ~42 MB rather than ~394 MB; Task 2 is unaffected. |
 | August 25, 2026 | Deliverables are now plain-text transcripts rather than screenshots (§3.6, §6). Added §5.6 on `-Weffc++` and AddressSanitizer. Setup now points at classroom50. Corrected `x/32x` to `x/32xb` in §5.4, which reads 32 bytes rather than 32 words. |
