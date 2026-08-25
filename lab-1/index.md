@@ -594,19 +594,34 @@ program, log in, make two deposits, and exit:
 
 ```console
 ERROR: LeakSanitizer: detected memory leaks
-SUMMARY: AddressSanitizer: 112 byte(s) leaked in 4 allocation(s).
+SUMMARY: AddressSanitizer: N byte(s) leaked in 4 allocation(s).
 ```
 
-When your Task 4 fix is right, that summary disappears. That is proof; the
-address listing in §5.4 is only evidence.
+Do not expect a particular byte count: it scales with `MAX_TRANSACTIONS`, which
+you changed in Task 4. What matters is that the summary is **present** before
+your fix and **absent** after it. That is proof; the address listing in §5.4 is
+only evidence.
 
-<aside class="callout callout--note" aria-labelledby="sanitizer-heading">
-<h2 class="callout__title" id="sanitizer-heading">Not a deliverable</h2>
-<p>Nothing in this section is submitted. It is here because these two commands
-will find more bugs in your own code, faster, than any amount of stepping — and
-because <code>-fsanitize=address</code> is how this class of bug is found in
-practice.</p>
-</aside>
+**Record the leak check.** This one is submitted, because it is the only step
+that proves Task 4 rather than suggesting it. Capture a single transcript that
+shows LeakSanitizer twice: once on the code **before** your Task 4 fix, and once
+**after**, in the same session.
+
+```bash
+script -q deliverables/part-2-task-4-leakcheck.txt
+# 1. before: build the sanitizer binary with your Task 4 fix reverted
+g++ -std=c++17 -g -fsanitize=address,leak -o banking-asan main.cpp bank.cpp
+./banking-asan          # log in, deposit twice, exit
+# 2. after: restore your fix, rebuild, and run exactly the same steps
+g++ -std=c++17 -g -fsanitize=address,leak -o banking-asan main.cpp bank.cpp
+./banking-asan          # log in, deposit twice, exit
+exit
+```
+
+The transcript must show the leak summary present in the first run and gone in
+the second. Nothing else in this section is submitted — the `-Weffc++` and
+AddressSanitizer parts are here because they will find more bugs in your own
+code, faster, than any amount of stepping.
 
 ## 6. Deliverables
 
@@ -631,8 +646,9 @@ already right. Check them with `ls deliverables/` before you push.
 | 10 | `deliverables/part-2-task-3.txt` | Part 2 Task 3 — overflow and counters |
 | 11 | `deliverables/part-2-task-4.txt` | Part 2 Task 4 — descriptions and memory |
 | 12 | `deliverables/part-2-task-5.txt` | Part 2 Task 5 — abort and pointer |
-| 13 | `part-2/bank.cpp` | Your corrected source |
-| 14 | `part-2/types.h` | Your corrected source |
+| 13 | `deliverables/part-2-task-4-leakcheck.txt` | LeakSanitizer before and after the Task 4 fix (§5.6) |
+| 14 | `part-2/bank.cpp` | Your corrected source |
+| 15 | `part-2/types.h` | Your corrected source |
 
 Your corrected `part-2` must build with `make` and run without crashing on the
 paths above. Before pushing, confirm it from a clean state:
@@ -674,5 +690,6 @@ Changes made to this handout after release are listed here, newest first.
 
 | Date | Change |
 | --- | --- |
+| August 25, 2026 | Added a graded leak-check transcript (§5.6, deliverable 13). Reduced `MAX_ACCOUNTS` in part-2 so the program uses ~42 MB rather than ~394 MB; Task 2 is unaffected. |
 | August 25, 2026 | Deliverables are now plain-text transcripts rather than screenshots (§3.6, §6). Added §5.6 on `-Weffc++` and AddressSanitizer. Setup now points at classroom50. Corrected `x/32x` to `x/32xb` in §5.4, which reads 32 bytes rather than 32 words. |
 | August 25, 2026 | Initial release for Fall 2026. Migrated from Google Docs. |
