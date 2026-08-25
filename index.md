@@ -24,15 +24,9 @@ page.
 | Lab | Title | Released | Due |
 | --- | --- | --- | --- |
 | [Lab 1](lab-1/) | Debugging with GDB | Tue Aug 25, 2026 | Tue Sep 8, 2026, 11:59 PM CT |
-| Lab 2 | To be released | Tue Sep 8, 2026 | — |
-| Lab 3 | To be released | Tue Sep 22, 2026 | — |
-| Lab 4 | To be released | Tue Oct 6, 2026 | — |
-| Lab 5 | To be released | Tue Oct 20, 2026 | — |
-| Lab 6 | To be released | Tue Nov 3, 2026 | — |
-| Lab 7 | To be released | Tue Nov 17, 2026 | — |
 
-Release weeks follow the course schedule in the syllabus. Due dates are
-confirmed on each lab's handout when it is released.
+Later labs are added to this table as they are released. The semester schedule,
+including which week each lab falls in, is in the syllabus.
 
 ## How labs are submitted
 
