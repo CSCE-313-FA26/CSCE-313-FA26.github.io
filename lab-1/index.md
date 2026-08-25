@@ -8,6 +8,8 @@ term: "Fall 2026"
 instructor: "David Kebo Houngninou"
 released: "Tuesday, August 25, 2026, 9:00 AM CT"
 due: "Tuesday, September 8, 2026, 11:59 PM CT"
+released_short: "Tue Aug 25, 2026"
+due_short: "Tue Sep 8, 2026, 11:59 PM CT"
 description: "Use GDB to inspect a running C++ banking system, then find and fix five memory and control-flow defects in it."
 ---
 

@@ -18,14 +18,6 @@
         <span class="site-header__course">{{ site.title }}</span>
         <span class="site-header__tagline">Introduction to Computer Systems</span>
       </a>
-      {% unless page.url == '/' %}
-      <nav aria-label="Breadcrumb" class="breadcrumb">
-        <ol>
-          <li><a href="{{ '/' | relative_url }}">Labs</a></li>
-          <li aria-current="page">{% if page.lab_number %}Lab {{ page.lab_number }}{% else %}{{ page.title }}{% endif %}</li>
-        </ol>
-      </nav>
-      {% endunless %}
     </div>
   </header>
 
@@ -36,7 +28,6 @@
   <footer class="site-footer">
     <div class="wrap">
       <p>{{ site.title }} — {{ site.description }}</p>
-      <p class="site-footer__meta">Texas A&amp;M University · Department of Computer Science and Engineering</p>
     </div>
   </footer>
 

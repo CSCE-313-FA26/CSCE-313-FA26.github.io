@@ -1,0 +1,25 @@
+---
+layout: base
+---
+<article class="prose lab">
+
+  <header class="lab-head">
+    <p class="lab-head__eyebrow">Activity · {{ page.activity_id }}</p>
+    <h1 class="lab-head__title">{{ page.activity_title | default: page.title }}</h1>
+    <p class="lab-head__course">{{ page.course }}</p>
+    <p class="lab-head__byline">{{ page.term }}{% if page.relates_to %} · Builds on {{ page.relates_to }}{% endif %}</p>
+
+    <dl class="lab-dates">
+      <div class="lab-dates__item">
+        <dt>Format</dt>
+        <dd>In class, supervised</dd>
+      </div>
+      <div class="lab-dates__item lab-dates__item--due">
+        <dt>Time</dt>
+        <dd><strong>{{ page.duration | default: "10–15 minutes" }}</strong></dd>
+      </div>
+    </dl>
+  </header>
+
+  {{ content }}
+</article>

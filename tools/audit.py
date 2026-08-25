@@ -42,12 +42,10 @@ def _lab_key(path):
     m = re.search(r'lab-(\d+)', path)
     return int(m.group(1)) if m else 0
 
-pages = (['index.md'] if os.path.exists(os.path.join(ROOT, 'index.md')) else [])
-pages += sorted(
-    (os.path.relpath(p, ROOT) for p in glob.glob(os.path.join(ROOT, 'lab-*', 'index.md'))),
-    key=_lab_key)
-if not pages:
-    err('(site)', 'no pages found to audit')
+pages = ['index.md', 'labs/index.md', 'activities/index.md'] + sorted(
+    os.path.relpath(f, ROOT)
+    for pat in ('lab-*', 'activity-*')
+    for f in glob.glob(os.path.join(ROOT, pat, 'index.md')))
 slug_re = re.compile(r'[^a-z0-9\- ]')
 
 for rel in pages:
@@ -74,6 +72,16 @@ for rel in pages:
         err(rel, 'front matter has no title')
     if not fm.get('description'):
         warn(rel, 'no description - weak search/link preview')
+
+    # a placeholder date must never reach students
+    for field in ('released', 'due'):
+        val = str(fm.get(field, ''))
+        if fm.get('lab_number') is not None and not val:
+            err(rel, 'front matter has no %s date' % field)
+        elif 'TBD' in val.upper() or 'TODO' in val.upper():
+            err(rel, '%s is still a placeholder: %r' % (field, val))
+    if 'lab_number' in fm and re.search(r'^\| TBD \|', body, re.M):
+        err(rel, 'revision history still has a TBD row')
 
     # ------- headings: no H1 in body (layout owns it), no level skips
     heads = []
@@ -203,6 +211,8 @@ for rel in pages:
     for m in re.finditer(r'\]\((?!https?:|mailto:|#)([^)]+)\)', body):
         target = m.group(1).split('#')[0]
         line = body[:m.start()].count('\n') + 1
+        if '{{' in target or '{%' in target:
+            continue
         if not target:
             continue
         cand = os.path.normpath(os.path.join(os.path.dirname(path), target))
