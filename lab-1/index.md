@@ -195,6 +195,18 @@ before moving on:
 cat deliverables/part-1-task-1.txt
 ```
 
+<aside class="callout callout--note" aria-labelledby="gdbinit-heading">
+<h2 class="callout__title" id="gdbinit-heading">If you use a GDB extension</h2>
+<p>GEF, pwndbg and PEDA change how GDB prints values — they set the output radix
+to hexadecimal, so <code>-1</code> appears as <code>0xffffffff</code> and
+<code>false</code> as <code>0x0</code>, and they print structures across several
+lines. Your transcripts are accepted either way, so you do not have to change
+anything.</p>
+<p>If you would rather your output match the examples on this page exactly, start
+GDB with <code>gdb -nx ./banking-system</code>, which ignores
+<code>~/.gdbinit</code> for that session only and leaves your setup untouched.</p>
+</aside>
+
 <aside class="callout callout--note" aria-labelledby="script-heading">
 <h2 class="callout__title" id="script-heading">Two things to know about `script`</h2>
 <p>You must run <code>exit</code> at the end, or the file stays incomplete.
@@ -715,6 +727,7 @@ Changes made to this handout after release are listed here, newest first.
 
 | Date | Change |
 | --- | --- |
+| August 26, 2026 | Transcripts recorded with a GDB extension (GEF, pwndbg, PEDA) are now accepted: those tools set the output radix to hex and pretty-print structures, and the checks no longer assume stock formatting. §3.6 notes `gdb -nx` for anyone who wants stock output. |
 | August 25, 2026 | §3.1 now carries the classroom50 assignment link. |
 | August 25, 2026 | Corrected §5.2: with a breakpoint set the program never reaches the crash, so the task now deletes the breakpoint before continuing, and uses `bt -12` to show the oldest frames. |
 | August 25, 2026 | Added a graded leak-check transcript (§5.6, deliverable 13). Reduced `MAX_ACCOUNTS` in part-2 so the program uses ~42 MB rather than ~394 MB; Task 2 is unaffected. |
