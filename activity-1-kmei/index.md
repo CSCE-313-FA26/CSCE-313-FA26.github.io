@@ -94,6 +94,15 @@ script -q deliverables/part-a.txt
 
 Then run GDB **twice**, without leaving the recording.
 
+<aside class="callout callout--note" aria-labelledby="debuginfod-heading">
+<h2 class="callout__title" id="debuginfod-heading">GDB asks a question on <code>run</code></h2>
+<p>The first <code>run</code> of <em>each</em> session prints
+<code>Enable debuginfod for this session? (y or [n])</code>, exactly as in Lab 1.
+<strong>Answer <code>n</code>.</strong> It asks again in run 2 — answer <code>n</code>
+again. Saying <code>y</code> starts a download that scrolls progress bars through
+your recording and swallows the next command you type.</p>
+</aside>
+
 **Run 1 — GDB follows the parent.** This is the default.
 
 ```console
