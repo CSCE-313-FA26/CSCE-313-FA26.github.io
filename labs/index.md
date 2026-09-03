@@ -5,7 +5,7 @@ heading: "Labs"
 description: "Lab handouts for CSCE 313, Fall 2026."
 ---
 
-{% assign labs = site.pages | where_exp: "p", "p.lab_number" | sort: "lab_number" %}
+{% assign labs = site.pages | where_exp: "p", "p.lab_number" | where_exp: "p", "p.listed != false" | sort: "lab_number" %}
 {%- comment -%}
 Kramdown only makes a <table> when at least one body row exists; guarded so an
 empty list cannot render as raw pipe characters.

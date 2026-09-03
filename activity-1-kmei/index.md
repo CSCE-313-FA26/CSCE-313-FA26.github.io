@@ -6,6 +6,7 @@ activity_title: "Watch a Process Split"
 course: "CSCE 313 · Introduction to Computer Systems"
 term: "Fall 2026"
 relates_to: "Lab 1"
+listed: false        # reachable by direct link, not shown in the index
 duration: "30 minutes"
 description: "Use GDB to watch what fork() returns in each process, then write the fork loop that starts four workers."
 ---

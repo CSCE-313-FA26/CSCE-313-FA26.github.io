@@ -5,7 +5,7 @@ heading: "Activities"
 description: "Activities for CSCE 313, Fall 2026."
 ---
 
-{% assign acts = site.pages | where_exp: "p", "p.activity_id" %}
+{% assign acts = site.pages | where_exp: "p", "p.activity_id" | where_exp: "p", "p.listed != false" %}
 {%- comment -%}
 Kramdown only makes a <table> when the markdown has at least one body row. With
 no activities published it would otherwise print the pipe characters as a
