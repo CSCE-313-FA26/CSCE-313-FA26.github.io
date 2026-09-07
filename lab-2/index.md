@@ -48,7 +48,7 @@ This lab has one client and three servers, each owning a different resource.
 
 <figure class="diagram diagram--wide">
 <div class="diagram-scroll" tabindex="0" role="group" aria-label="System architecture diagram, scrollable">
-<svg viewBox="0 0 760 400" role="img" aria-labelledby="fig1-title" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 760 416" role="img" aria-labelledby="fig1-title" xmlns="http://www.w3.org/2000/svg">
   <title id="fig1-title">Architecture of the lab 2 system: one client process forks three server processes, each owning one resource</title>
   <desc>The client process sits at the bottom. Three arrows labelled RequestChannel run from it to three server processes above: the file server, the logging server and the finance server. Each server has a two-way arrow to the resource it owns: the file server to the storage directory, the logging server to the log file, and the finance server to its array of accounts. The channel names are file, logging and finance.</desc>
   <defs>
@@ -92,10 +92,10 @@ This lab has one client and three servers, each owning a different resource.
   <path d="M 380 310 L 380 224" class="d-edge" marker-start="url(#f1arrow)" marker-end="url(#f1arrow)"/>
   <path d="M 420 310 L 610 224" class="d-edge" marker-start="url(#f1arrow)" marker-end="url(#f1arrow)"/>
 
-  <text x="205" y="258" text-anchor="middle" class="d-text--edge">"file"</text>
+  <text x="150" y="272" text-anchor="middle" class="d-text--edge">"file"</text>
   <text x="393" y="262" text-anchor="start"  class="d-text--edge">"logging"</text>
-  <text x="556" y="258" text-anchor="middle" class="d-text--edge">"finance"</text>
-  <text x="380" y="295" text-anchor="middle" class="d-text--sm">three RequestChannels</text>
+  <text x="612" y="272" text-anchor="middle" class="d-text--edge">"finance"</text>
+  <text x="380" y="408" text-anchor="middle" class="d-text--sm">three RequestChannels, one per server</text>
 
   <rect x="290" y="313" width="180" height="56" rx="6" class="d-box--brand"/>
   <text x="380" y="336" text-anchor="middle" class="d-title">client process</text>
@@ -391,7 +391,7 @@ Started as `./fileserver <ext_1> ... <ext_n>`. It owns the `storage/` directory.
 
 <figure class="diagram diagram--wide">
 <div class="diagram-scroll" tabindex="0" role="group" aria-label="File server request handling diagram, scrollable">
-<svg viewBox="0 0 760 430" role="img" aria-labelledby="fig3-title" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="-45 0 855 440" role="img" aria-labelledby="fig3-title" xmlns="http://www.w3.org/2000/svg">
   <title id="fig3-title">How the file server handles one request</title>
   <desc>A request arrives on the file channel. QUIT exits immediately with no response. An UPLOAD_FILE request is checked against the allowed extension list, but only if that list is non-empty; a matching or unchecked file is written into the storage directory, and a non-matching one fails with File extension not allowed. A DOWNLOAD_FILE request looks for the named file in the storage directory and, if found, copies its bytes into the response data field, otherwise fails with File not found. Any other type fails. All paths except QUIT send a response.</desc>
   <defs>
@@ -414,8 +414,8 @@ Started as `./fileserver <ext_1> ... <ext_n>`. It owns the `storage/` directory.
   <path d="M 190 78 L 570 78" class="d-edge"/>
   <path d="M 190 78 L 190 102" class="d-edge" marker-end="url(#f3arrow)"/>
   <path d="M 570 78 L 570 102" class="d-edge" marker-end="url(#f3arrow)"/>
-  <text x="190" y="96" text-anchor="end" class="d-text--sm">UPLOAD_FILE </text>
-  <text x="570" y="96" text-anchor="start" class="d-text--sm"> DOWNLOAD_FILE</text>
+  <text x="176" y="96" text-anchor="end" class="d-text--sm">UPLOAD_FILE</text>
+  <text x="584" y="96" text-anchor="start" class="d-text--sm">DOWNLOAD_FILE</text>
 
   <path d="M 190 104 L 300 141 L 190 178 L 80 141 Z" class="d-box"/>
   <text x="190" y="132" text-anchor="middle" class="d-text--sm">extension list empty,</text>
@@ -474,9 +474,9 @@ file survives between runs.
 
 <figure class="diagram">
 <div class="diagram-scroll" tabindex="0" role="group" aria-label="Logging server request handling diagram, scrollable">
-<svg viewBox="0 0 620 400" role="img" aria-labelledby="fig4-title" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 620 350" role="img" aria-labelledby="fig4-title" xmlns="http://www.w3.org/2000/svg">
   <title id="fig4-title">How the logging server handles one request</title>
-  <desc>The logging server waits for a request. If the type is QUIT it calls exit zero immediately and sends no response, so the log line is never written for a quit. For every other type it writes one line beginning with the user id in square brackets followed by a description of the action, then replies with success true and loops back to waiting. An unrecognised type is still logged, as unknown action.</desc>
+  <desc>The logging server waits for a request. If the type is QUIT it calls exit zero immediately, logging nothing and sending nothing back, which is why a quit never appears in the log file. For every other type it appends one line beginning with the user id in square brackets followed by a description of the action, replies with success, and loops back to waiting.</desc>
   <defs>
     <marker id="f4arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" class="d-arrow"/>
@@ -490,13 +490,11 @@ file survives between runs.
   <path d="M 310 86 L 400 116 L 310 146 L 220 116 Z" class="d-box"/>
   <text x="310" y="120" text-anchor="middle" class="d-text--mono">r.type == QUIT ?</text>
 
-  <path d="M 400 116 L 470 116" class="d-edge" marker-end="url(#f4arrow)"/>
-  <text x="435" y="109" text-anchor="middle" class="d-text--sm">yes</text>
-  <rect x="472" y="92" width="144" height="48" rx="6" class="d-box--warn"/>
-  <text x="544" y="112" text-anchor="middle" class="d-text--mono">exit(0)</text>
-  <text x="544" y="130" text-anchor="middle" class="d-text--sm">nothing logged,</text>
-
-  <text x="544" y="152" text-anchor="middle" class="d-text--sm">nothing sent back</text>
+  <path d="M 400 116 L 454 116" class="d-edge" marker-end="url(#f4arrow)"/>
+  <text x="427" y="109" text-anchor="middle" class="d-text--sm">yes</text>
+  <rect x="456" y="89" width="160" height="54" rx="6" class="d-box--warn"/>
+  <text x="536" y="111" text-anchor="middle" class="d-text--mono">exit(0)</text>
+  <text x="536" y="131" text-anchor="middle" class="d-text--sm">nothing logged or sent</text>
 
   <path d="M 310 146 L 310 180" class="d-edge" marker-end="url(#f4arrow)"/>
   <text x="321" y="170" text-anchor="start" class="d-text--sm">no</text>
@@ -510,8 +508,8 @@ file survives between runs.
   <rect x="185" y="290" width="250" height="42" rx="6" class="d-box--brand"/>
   <text x="310" y="317" text-anchor="middle" class="d-title">send_response(success)</text>
 
-  <path d="M 435 311 L 590 311 L 590 35 L 424 35" class="d-edge--muted" marker-end="url(#f4arrow)"/>
-  <text x="590" y="360" text-anchor="middle" class="d-text--sm">loop</text>
+  <path d="M 185 311 L 100 311 L 100 35 L 196 35" class="d-edge--muted" marker-end="url(#f4arrow)"/>
+  <text x="110" y="180" text-anchor="start" class="d-text--sm">loop</text>
 </svg>
 </div>
 <figcaption>Figure 4 — The logging server. A QUIT is the one request it does not log, because it exits before reaching the logging code.</figcaption>
