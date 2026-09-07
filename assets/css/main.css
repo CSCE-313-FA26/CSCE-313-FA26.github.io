@@ -404,6 +404,27 @@ figure img {
 /* Diagrams are vector, so they may fill the figure width. */
 figure.diagram { max-width: min(100%, 46rem); }
 figure.diagram svg { width: 100%; height: auto; display: block; }
+/* ---- Diagram primitives -------------------------------------------------
+   Used by the inline SVGs in the lab handouts. Everything resolves to a design
+   token, so the dark theme is inherited rather than restated: there is no
+   literal colour here and nothing to keep in sync. Stroke widths are chosen so
+   a shape edge still reads at the .diagram-scroll min-width floor.          */
+.d-box       { fill: var(--surface);   stroke: var(--border-strong); stroke-width: 1.5; }
+.d-box--busy { fill: var(--surface-2); stroke: var(--border-strong); stroke-width: 1.5; }
+.d-box--note { fill: var(--note-wash); stroke: var(--note);          stroke-width: 1.5; }
+.d-box--warn { fill: var(--warn-wash); stroke: var(--warn);          stroke-width: 1.5; }
+.d-box--brand{ fill: var(--brand-wash);stroke: var(--brand);         stroke-width: 1.5; }
+.d-edge      { fill: none; stroke: var(--border-strong); stroke-width: 1.5; }
+.d-edge--muted { fill: none; stroke: var(--border-strong); stroke-width: 1.5;
+                 stroke-dasharray: 5 4; }
+.d-text      { fill: var(--text); font-family: var(--font-sans); font-size: 13px; }
+.d-text--sm  { fill: var(--text-muted); font-family: var(--font-sans); font-size: 11.5px; }
+.d-text--mono{ fill: var(--text); font-family: var(--font-mono); font-size: 12px; }
+.d-text--edge{ fill: var(--text-muted); font-family: var(--font-mono); font-size: 11.5px; }
+.d-title     { fill: var(--text); font-family: var(--font-sans); font-size: 14px;
+               font-weight: 600; }
+.d-arrow     { fill: var(--border-strong); }
+
 figcaption {
   margin-top: var(--sp-2);
   font-size: var(--fs-sm);

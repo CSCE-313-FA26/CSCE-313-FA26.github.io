@@ -144,8 +144,10 @@ for rel in pages:
         blk = m.group(1)
         if '<figcaption>' not in blk:
             err(rel, 'line %d: <figure> without <figcaption>' % line)
-        if '<img' not in blk:
-            err(rel, 'line %d: <figure> without <img>' % line)
+        # A diagram may be inline <svg> instead of a raster <img>; the SVG block
+        # below then enforces its accessible name, <desc> and class styling.
+        if '<img' not in blk and '<svg' not in blk:
+            err(rel, 'line %d: <figure> without <img> or inline <svg>' % line)
 
     # ------- inline SVG: valid XML, accessible name, styled classes
     for m in re.finditer(r'<svg\b.*?</svg>', body, re.S):
