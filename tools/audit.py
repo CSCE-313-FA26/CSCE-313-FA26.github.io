@@ -217,7 +217,14 @@ for rel in pages:
             continue
         if not target:
             continue
-        cand = os.path.normpath(os.path.join(os.path.dirname(path), target))
+        # A leading "/" means the SITE root, not the filesystem root. Joining it
+        # onto the page's directory makes os.path.join discard the directory and
+        # hand back an absolute path, which never exists on disk - so every
+        # root-relative link was reported broken while working fine in a browser.
+        if target.startswith('/'):
+            cand = os.path.normpath(os.path.join(ROOT, target.lstrip('/')))
+        else:
+            cand = os.path.normpath(os.path.join(os.path.dirname(path), target))
         if not (os.path.exists(cand) or os.path.exists(cand + '.md')
                 or os.path.exists(os.path.join(cand, 'index.md'))):
             err(rel, 'line %d: internal link does not resolve: %s' % (line, target))
