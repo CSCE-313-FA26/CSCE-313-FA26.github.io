@@ -40,9 +40,9 @@ code-completing assistant. <strong>Turn AI completion off in your editor before
 you begin.</strong></p>
 <p><strong>This activity is completed in class, under Honorlock.</strong> Work
 done outside class does not count.</p>
-<p><strong>Your instructor will give you the Honorlock instructions when the
-activity is released.</strong> They are not on this page — wait for them, and do
-not start the proctored session until you are told to.</p>
+<p><strong>We will give you the Honorlock instructions when the activity is
+released.</strong> They are not on this page — wait for them, and do not start
+the proctored session until you are told to.</p>
 </aside>
 
 What you **may** use: the Lab 2 handout, your own Lab 2 work, the `man` pages,
