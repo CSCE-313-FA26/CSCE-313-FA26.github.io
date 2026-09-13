@@ -32,14 +32,22 @@ four already.
 
 ## 2. Rules
 
-**No artificial intelligence.** You may not use Copilot, ChatGPT, Claude, Gemini
-or any other code-generating assistant during this activity. Disable AI code
-completion in your editor before you begin. This applies to every student in
-every section.
+<aside class="callout callout--warn" aria-labelledby="rules-heading">
+<h2 class="callout__title" id="rules-heading">No AI. In class. Proctored.</h2>
+<p><strong>No artificial intelligence of any kind.</strong> No Codex, no Cursor,
+no ChatGPT, no Claude, no Copilot, no Gemini, and no other code-generating or
+code-completing assistant. <strong>Turn AI completion off in your editor before
+you begin.</strong></p>
+<p><strong>This activity is completed in class, under Honorlock.</strong> Work
+done outside class does not count.</p>
+<p><strong>Your instructor will give you the Honorlock instructions when the
+activity is released.</strong> They are not on this page — wait for them, and do
+not start the proctored session until you are told to.</p>
+</aside>
 
-You may read the Lab 2 handout, your own Lab 2 work, the `man` pages, and your
-lecture notes. You may talk to the person next to you about *ideas*. The code you
-submit must be yours.
+What you **may** use: the Lab 2 handout, your own Lab 2 work, the `man` pages,
+and your lecture notes. You may talk to the person next to you about *ideas*.
+The code you submit must be yours.
 
 ## 3. Get your repository
 
@@ -102,7 +110,8 @@ Four things have to be true, and each one is a separate bug:
 1. The workers **run at all**.
 2. There are **exactly four** of them, and the client is still alive to reap them.
 3. Each worker is told **its own index** — 0, 1, 2, 3, not the same number four times.
-4. The client **reaps every child** and reports the status each one exited with.
+4. The client **reaps every child** — all four, not just the first — and reports
+   the status each one exited with.
 
 Your PIDs will differ. **The lines may interleave in a different order** — workers
 and the client run at the same time, so a reaped line can appear before another
@@ -164,6 +173,7 @@ worth partial credit.
 | `the client exec'd itself` | The exec is not guarded — the parent reached it too |
 | `produced N worker lines, expected 4` | Some workers never started |
 | `worker indices were …` | Each worker must be told its own index |
+| `only N of 4 children were reaped` | One `wait()` collects one child |
 | `nothing was reaped` | The client never called `wait()` |
 
 ## 8. If you finish early
