@@ -17,6 +17,7 @@ computer security concepts.
 ## Coursework
 
 - **[Labs](labs/)** — the graded lab handouts, released weekly.
+- **[Exams](exams/)** — exam dates, format and instructions.
 
 ## Getting help
 
