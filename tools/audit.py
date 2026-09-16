@@ -42,10 +42,16 @@ def _lab_key(path):
     m = re.search(r'lab-(\d+)', path)
     return int(m.group(1)) if m else 0
 
-pages = ['index.md', 'labs/index.md', 'activities/index.md'] + sorted(
+# EVERY top-level page is audited. This used to glob only 'lab-*' and
+# 'activity-*', so exams/ and exam-1-instructions/ were silently skipped - the
+# audit reported ERRORS: none on pages it had never opened. Only build and
+# tooling directories are excluded.
+_SKIP = {'assets', 'tools'}
+pages = ['index.md'] + sorted(
     os.path.relpath(f, ROOT)
-    for pat in ('lab-*', 'activity-*')
-    for f in glob.glob(os.path.join(ROOT, pat, 'index.md')))
+    for f in glob.glob(os.path.join(ROOT, '*', 'index.md'))
+    if not os.path.basename(os.path.dirname(f)).startswith(('_', '.'))
+    and os.path.basename(os.path.dirname(f)) not in _SKIP)
 slug_re = re.compile(r'[^a-z0-9\- ]')
 
 for rel in pages:
