@@ -402,7 +402,7 @@ The autograder runs on every push. Push as often as you like and read the result
 | Servers keep running after the client is killed | A pipe end was left open — often another server's, inherited by a later child |
 | `Response` fields hold garbage in pipe mode | A server printed to standard output, which is the response pipe |
 | `fifo_*` files left behind after a clean exit | The destructor does not remove the FIFOs, or the client never `delete`s its channels |
-| A server exits the instant it starts, in pipe mode | Its standard input was not redirected — it read end-of-file straight away |
+| In pipe mode, the client quits with no message the first time it uses one of the servers — at the first deposit, say | That server's standard input was not redirected. It reads the keyboard instead of its request pipe, so nothing reads that pipe, and the client's write to it kills the client (`SIGPIPE`) |
 | `receive_request` test fails on end-of-file | `0` from `cread` must become `FAILURE`, not a default `Request` |
 | Works locally, fails a FIFO check in the grader | Your channel names differ from `finance`, `logging`, `file` |
 
@@ -418,3 +418,4 @@ Office hours and TA contact details are in the syllabus.
 | Date | Change |
 | --- | --- |
 | 2026-09-19 | Migrated from the Google Doc to this page. Due date corrected from June 28 (a leftover from a summer offering) to Monday, October 5. GitHub Classroom replaced by classroom50. The unit tests, previously hidden, now ship in `tests/` and run with `make test`. Removed claims that the client prints process information and that the tests must stay secret. Corrected the `FIFOChannel` task, which described a pipe constructor taking descriptors. Added the IPC-choice prompt, the QUIT reply, the `-n` log-file flag, the FIFO names and open order, the standard-output warning, the upload limit, and the orphaned-server experiment. The missing `storage/example_execution.txt` and `storage/example.log` were recorded from a real run and added to the starter. The figure was redrawn with the client and server named and each process's closed ends shown. |
+| 2026-09-21 | Section 6.1: corrected the symptom of a server whose standard input was not redirected. It does not exit at start-up; the client dies silently at its first request to that server. |
