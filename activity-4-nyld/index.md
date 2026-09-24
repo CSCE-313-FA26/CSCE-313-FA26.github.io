@@ -122,7 +122,15 @@ make
 ```
 
 Nothing happens. Neither program prints a request or a reply, and neither exits.
-That is the first bug, and section 4.3 of the Lab 3 handout describes it exactly.
+
+**That first bug is given to you, because it blocks the other three: the two
+sides open the FIFOs in opposite orders.** The server opens `fifo_request` and
+then `fifo_reply`; the client opens them the other way round, so each side is
+waiting for the other on a different FIFO and neither ever gets past `open`. Make
+the client open them in the same order as the server. Section 4.3 of the Lab 3
+handout is the same rule, and your `FIFOChannel` has to obey it.
+
+The other three are yours to find.
 
 <aside class="callout callout--note" aria-labelledby="open-heading">
 <h2 class="callout__title" id="open-heading">Opening a FIFO waits for the other side</h2>
