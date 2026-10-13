@@ -34,6 +34,11 @@ as the in-class activities:
 
 It is a **take-home** exam. **There is no class on Thursday, October 15.**
 
+The exam is out of **100**: four coding tasks, graded by running your code, worth
+**80**, and four short written questions, marked by hand, worth **20**. Answer
+the written questions even if your code is unfinished — a blank answer sheet
+scores zero.
+
 ## 2. Date, Time and Duration
 
 | | |
