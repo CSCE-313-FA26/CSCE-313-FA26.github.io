@@ -82,12 +82,18 @@ It prints its work lines and finishes with `parent done, reaped 0 children`.
 While it is running, in a second terminal:
 
 ```bash
-ps --ppid $(pgrep -x reaper) -o pid,stat,comm
+ps -C reaper -o pid,ppid,stat,comm
 ```
 
-Three children, every one in state **`Z`**. A child that has exited is not gone:
+Four lines: the parent in state `S`, and three children in state **`Z`**. A
+zombie keeps its parent's name, which is why this asks `ps` for every process
+called `reaper` rather than for one pid's children. A child that has exited is
+not gone:
 the kernel keeps its exit status until the parent asks for it, and until then the
 entry stays. `reap_all` in `signals-practice` is the same picture with five.
+
+Run it again after you have fixed it and the same command prints **one** line —
+the parent, and no children at all.
 
 <aside class="callout callout--note" aria-labelledby="queue-heading">
 <h2 class="callout__title" id="queue-heading">One signal can stand for several children</h2>
