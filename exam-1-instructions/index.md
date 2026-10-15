@@ -33,9 +33,12 @@ Exam 1 is a **coding exam**. It works the same way as the in-class activities:
 
 It is a **take-home** exam. **There is no class on Thursday, October 15.**
 
-The exam is out of **100**, and **every point is scored by running your code**.
-There is nothing to write up and nothing marked by hand: four C programs, worth
-20, 20, 30 and 30. The two 30-point tasks are the signal work from Lab 4.
+The exam is **four C programs, out of 100**, worth 20, 20, 30 and 30. The two
+30-point tasks are the signal work from Lab 4.
+
+**You are graded on what your programs do when they are run** — the autograder
+compiles each one, runs it, and reads what it prints. Nobody reads your source,
+and there is nothing to write up.
 
 The four tasks are **independent** — a task you cannot finish does not block any
 other.

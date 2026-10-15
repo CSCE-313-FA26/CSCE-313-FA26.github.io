@@ -23,8 +23,18 @@ description: "The four coding tasks of Exam 1: what to write in each file, what 
 
 ## 1. Description
 
-Four C programs, **100 points, every one of them scored by running your code.**
-There is nothing to write up and nothing marked by hand.
+You are given four C files. Each one is complete except for a few marked
+`TODO`s: the `#include`s, `main()`, and every `printf` you need are already
+written, and you fill in the lines that do the actual work. Across the four
+files that comes to roughly **65 lines of code**.
+
+**You are graded on what your programs do when they are run.** The autograder
+compiles each one, runs it, and reads what it prints — nobody reads your source.
+So code that looks correct but does not compile, or prints something other than
+the line a check is looking for, earns nothing for that check.
+
+Before you push you can run the very same checks yourself, as often as you
+like — that is `make test` in section 2.
 
 | Task | File | Points | What it is about |
 | --- | --- | --- | --- |
