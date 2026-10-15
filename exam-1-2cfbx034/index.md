@@ -33,8 +33,8 @@ compiles each one, runs it, and reads what it prints — nobody reads your sourc
 So code that looks correct but does not compile, or prints something other than
 the line a check is looking for, earns nothing for that check.
 
-Before you push you can run the very same checks yourself, as often as you
-like — that is `make test` in section 2.
+Before you push you can run those same checks yourself, as often as you like:
+the command is `make test`, in section 2.
 
 | Task | File | Points | What it is about |
 | --- | --- | --- | --- |
@@ -44,15 +44,15 @@ like — that is `make test` in section 2.
 | 4 | `watchdog.c` | 30 | using a signal to put a time limit on a blocking call |
 
 **Tasks 3 and 4 are the signal work and carry 60 of the 100 points.** They are
-the material of Lab 4: installing a handler with `sigaction()`, deciding what
-`sa_flags` should say, blocking and unblocking, and knowing why a blocking call
-came back.
+the material of Lab 4: installing a handler with `sigaction()`, choosing the
+right `sa_flags`, blocking and unblocking a signal, and working out why a
+blocking call returned.
 
 The four tasks are **independent**. A task you cannot finish does not block any
-other, so if one fights you, move on and come back.
+other, so if you get stuck on one, move on and come back to it.
 
 <aside class="callout callout--warn" aria-labelledby="rules-heading">
-<h2 class="callout__title" id="rules-heading">No AI. Honorlock. Two hours.</h2>
+<h2 class="callout__title" id="rules-heading">Exam conditions: no AI, Honorlock proctoring, two hours</h2>
 <p><strong>No artificial intelligence of any kind.</strong> No Codex, no Cursor,
 no ChatGPT, no Claude, no Copilot, no Gemini, and no other code-generating or
 code-completing assistant. <strong>Turn AI completion off in your editor before
@@ -80,11 +80,12 @@ make test   # the same checks the autograder runs, out of 100
 
 A fresh clone builds with **four warnings**: `unused variable 'fd'` in
 `pipeline.c`, and three "defined but not used" for the handlers in `guard.c` and
-`watchdog.c`. They are the TODOs talking to you, and they go away as you fill
-them in.
+`watchdog.c`. They appear because those TODOs are not filled in yet, and
+they disappear as you complete them.
 
-Every `printf` you need is already written in each file. **Do not change the
-wording of the output** — the checks read those lines.
+**Do not change the wording of anything your program prints.** The checks match
+those lines exactly, so an altered message fails a check that your logic would
+otherwise have passed.
 
 ### Given to you — do not edit
 
@@ -94,8 +95,8 @@ wording of the output** — the checks read those lines.
 | `emit.c` | writes five lines to standard output |
 | `count.c` | counts lines on standard input, prints `count <n>` at end of file |
 
-These, the `Makefile` and `tests/` are replaced with the reference copies before
-grading, so editing them changes nothing.
+Those three files, together with the `Makefile` and `tests/`, are replaced with
+the reference copies before grading, so editing them changes nothing.
 
 ## 3. The Tasks
 
@@ -106,8 +107,8 @@ thing in more detail.
 ### 3.1 Task 1 — `spawn.c` (20 points)
 
 **What to write.** Start `N_WORKERS` copies of `./worker` with `fork()` and
-`exec`, each told its own index. Then collect every one of them and report the
-status it exited with.
+`exec`, passing each one its own index as an argument. Then wait for every one
+of them and report the status it exited with.
 
 **A correct run prints** the start line, four `worker …` lines in any order,
 four `reaped …` lines, and the total:
@@ -125,18 +126,19 @@ reaped pid 2004 status 3
 spawn done, reaped 4
 ```
 
-**How it is checked.** Two separate rows:
+**How it is checked.** The 20 points are two independent checks:
 
 | | Points |
 | --- | --- |
-| Each worker ran with its own index and reports **spawn's own pid** as its parent | 12 |
-| Every child was reaped, and the status reported is the one the worker chose — not the raw value `waitpid()` writes | 8 |
+| Each worker runs with its own index, and reports **spawn's own pid** as its parent | 12 |
+| Every child is reaped, and the status you print is the one the worker exited with — not the raw value `waitpid()` writes into your variable | 8 |
 
 ### 3.2 Task 2 — `pipeline.c` (20 points)
 
-**What to write.** Do by hand what the shell does for `./emit | ./count`: one
-pipe, two children, each with the right end wired to the right standard stream,
-and every descriptor nobody needs closed.
+**What to write.** Do by hand what the shell does for `./emit | ./count`:
+create one pipe, fork two children, connect the correct end of the pipe to the
+correct standard stream in each child, and close every descriptor that is not
+needed.
 
 **A correct run prints exactly one line, then exits:**
 
@@ -144,10 +146,12 @@ and every descriptor nobody needs closed.
 count 5
 ```
 
-**How it is checked.** `count 5` appears and the program exits on its own, for
-the full 20. If the plumbing works but the program never finishes, a write end
-is still open somewhere and `./count` never sees end of file — that earns **12
-of 20**, because the `dup2` and the `exec` demonstrably worked.
+**How it is checked.** One check, with partial credit:
+
+| | Points |
+| --- | --- |
+| `count 5` is printed and the program exits on its own | 20 |
+| *Partial credit:* the pipe is wired up correctly but the program never finishes. That means a write end is still open somewhere, so `./count` never reaches end of file — but the `dup2` and the `exec` clearly worked | 12 |
 
 ### 3.3 Task 3 — `guard.c` (30 points)
 
@@ -155,8 +159,9 @@ of 20**, because the `dup2` and the `exec` demonstrably worked.
 only `SIGINT` — while the critical section runs, unblock it afterwards, then arm
 a one-second alarm and wait for it.
 
-**While grading, a `SIGINT` is sent 200 ms in — during the critical section,
-which lasts 400 ms.** A correct program therefore prints, in this order:
+**While grading, a `SIGINT` is sent 200 ms after your program starts** — that
+is during the critical section, which lasts 400 ms. A correct program therefore
+prints, in this order:
 
 ```console
 critical 1
@@ -168,7 +173,7 @@ alarm fired
 `interrupted` appearing **after** `critical 2` is the whole point: a blocked
 signal is held, not lost, and it is delivered the moment you unblock it.
 
-**How it is checked.** Two separate rows:
+**How it is checked.** The 30 points are two independent checks:
 
 | | Points |
 | --- | --- |
@@ -185,7 +190,8 @@ outcomes apart — the data arrived, or the alarm interrupted the read.
 is the three TODOs: the handler, the alarm, and a `read()` that knows why it
 came back.
 
-The grader runs your program **both ways**, passing the argument itself:
+The grader runs your program **twice, once with each argument**. You never
+choose the mode yourself — the grader supplies `fast` or `slow`:
 
 ```console
 $ ./watchdog fast        # the child answers after 0.3 s
@@ -205,7 +211,7 @@ interrupted `read()` and your program waits for ever. Without it, `read()`
 returns `-1` with `errno` set to `EINTR`, which is how you learn the deadline
 passed.
 
-**How it is checked.** Two separate rows:
+**How it is checked.** The 30 points are two independent checks:
 
 | | Points |
 | --- | --- |
