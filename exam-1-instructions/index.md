@@ -7,9 +7,9 @@ course: "CSCE 313 · Introduction to Computer Systems"
 term: "Fall 2026"
 instructor: "David Kebo Houngninou"
 exam_date: "Thursday, October 15, 2026"
-exam_window: "9:00 AM – 11:59 PM CT"
+exam_window: "8:00 AM – 11:59 PM CT"
 exam_duration: "2 hours"
-released_short: "Thu Oct 15, 2026, 9:00 AM CT"
+released_short: "Thu Oct 15, 2026, 8:00 AM CT"
 due_short: "Thu Oct 15, 2026, 11:59 PM CT"
 description: "How Exam 1 works: a two-hour take-home coding exam on October 15, run under Honorlock, with the topics it may cover."
 ---
@@ -45,10 +45,10 @@ other.
 | | |
 | --- | --- |
 | **Date** | Thursday, October 15, 2026 |
-| **Window** | 9:00 AM – 11:59 PM CT |
+| **Window** | 8:00 AM – 11:59 PM CT |
 | **Duration** | 2 hours |
 
-You choose when to start. The exam window opens at 9:00 AM, and you have
+You choose when to start. The exam window opens at 8:00 AM, and you have
 **2 hours** from whenever you begin.
 
 **Nothing pushed after 11:59 PM CT is accepted.** Two hours before that is

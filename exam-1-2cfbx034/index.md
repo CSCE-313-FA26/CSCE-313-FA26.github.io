@@ -7,7 +7,7 @@ course: "CSCE 313 · Introduction to Computer Systems"
 term: "Fall 2026"
 instructor: "David Kebo Houngninou"
 exam_date: "Thursday, October 15, 2026"
-exam_window: "9:00 AM – 11:59 PM CT"
+exam_window: "8:00 AM – 11:59 PM CT"
 exam_duration: "2 hours"
 listed: false        # reachable by direct link, not shown on /exams/
 description: "The four coding tasks of Exam 1: what to write in each file, what a correct run prints, and how each one is checked."
@@ -50,7 +50,7 @@ you begin.</strong></p>
 <p>Open notes, open book, open online search. <strong>Honorlock through
 Canvas.</strong> Your own work only — do not share code.</p>
 <p>You have <strong>two hours</strong> from whenever you start, inside the
-9:00 AM – 11:59 PM CT window. <strong>Nothing pushed after 11:59 PM CT is
+8:00 AM – 11:59 PM CT window. <strong>Nothing pushed after 11:59 PM CT is
 accepted.</strong></p>
 </aside>
 
