@@ -1,8 +1,8 @@
 ---
 layout: exam
-title: "Exam 1 — Tasks"
+title: "Exam 1 — Processes and Signals"
 exam_number: 1
-exam_title: "Tasks"
+exam_title: "Exam 1 — Processes and Signals"
 course: "CSCE 313 · Introduction to Computer Systems"
 term: "Fall 2026"
 instructor: "David Kebo Houngninou"
@@ -10,7 +10,7 @@ exam_date: "Thursday, October 15, 2026"
 exam_window: "9:00 AM – 11:59 PM CT"
 exam_duration: "2 hours"
 listed: false        # reachable by direct link, not shown on /exams/
-description: "The four coding tasks and four written questions of Exam 1, with what each one is worth and how it is checked."
+description: "The four coding tasks of Exam 1: what to write in each file, what a correct run prints, and how each one is checked."
 ---
 
 <nav class="toc" aria-labelledby="toc-heading" markdown="1">
@@ -21,7 +21,25 @@ description: "The four coding tasks and four written questions of Exam 1, with w
 {:toc}
 </nav>
 
-## 1. Before you start
+## 1. Description
+
+Four C programs, **100 points, every one of them scored by running your code.**
+There is nothing to write up and nothing marked by hand.
+
+| Task | File | Points | What it is about |
+| --- | --- | --- | --- |
+| 1 | `spawn.c` | 20 | `fork`, `exec`, and collecting children |
+| 2 | `pipeline.c` | 20 | one pipe, two children, `dup2` |
+| 3 | `guard.c` | 30 | blocking a signal around a critical section |
+| 4 | `watchdog.c` | 30 | using a signal to put a time limit on a blocking call |
+
+**Tasks 3 and 4 are the signal work and carry 60 of the 100 points.** They are
+the material of Lab 4: installing a handler with `sigaction()`, deciding what
+`sa_flags` should say, blocking and unblocking, and knowing why a blocking call
+came back.
+
+The four tasks are **independent**. A task you cannot finish does not block any
+other, so if one fights you, move on and come back.
 
 <aside class="callout callout--warn" aria-labelledby="rules-heading">
 <h2 class="callout__title" id="rules-heading">No AI. Honorlock. Two hours.</h2>
@@ -39,26 +57,7 @@ accepted.</strong></p>
 The full rules, the window arithmetic and the accommodations are on the
 [Exam 1 instructions page](/exam-1-instructions/). This page is the exam itself.
 
-## 2. What you are building, and what it is worth
-
-Four small programs, each **independent** — a task you cannot finish does not
-block any other. The autograder scores the code **out of 80**:
-
-| Task | File | Points |
-| --- | --- | --- |
-| 1. Start four workers and collect them | `spawn.c` | 25 |
-| 2. Connect `./emit` to `./count` through one pipe | `pipeline.c` | 25 |
-| 3. One message through a FIFO | `fifo_round.c` | 15 |
-| 4. A handler, a mask and an alarm | `guard.c` | 15 |
-
-Four written questions in **`answers.md`** are worth the remaining **20 points**
-and are marked by hand. **Exam total: 100.**
-
-Each file carries its own instructions in comments, and every `printf` you need
-is already written. **Do not change the wording of the output** — the checks
-read those lines.
-
-## 3. Setting up
+## 2. Setting Up
 
 1. Accept the exam on [classroom50.org](https://classroom50.org/), then clone
    your repository.
@@ -66,12 +65,16 @@ read those lines.
 
 ```bash
 make        # your four programs, plus the three given ones
-make test   # the same checks the autograder runs, out of 80
+make test   # the same checks the autograder runs, out of 100
 ```
 
-A fresh clone builds with **three warnings** — `unused variable 'fd'`, and the
-two handlers in `guard.c` "defined but not used". They are the TODOs talking to
-you, and they go away as you fill them in.
+A fresh clone builds with **four warnings**: `unused variable 'fd'` in
+`pipeline.c`, and three "defined but not used" for the handlers in `guard.c` and
+`watchdog.c`. They are the TODOs talking to you, and they go away as you fill
+them in.
+
+Every `printf` you need is already written in each file. **Do not change the
+wording of the output** — the checks read those lines.
 
 ### Given to you — do not edit
 
@@ -84,15 +87,20 @@ you, and they go away as you fill them in.
 These, the `Makefile` and `tests/` are replaced with the reference copies before
 grading, so editing them changes nothing.
 
-## 4. The coding tasks
+## 3. The Tasks
 
-### 4.1 Task 1 — `spawn.c` (25 points)
+Each task below says three things: **what to write**, **what a correct run
+prints**, and **how it is checked**. The TODO comments in the file say the same
+thing in more detail.
 
-Start `N_WORKERS` copies of `./worker` with `fork()` and `exec`, each told its
-own index, then collect every one of them and report the status it exited with.
+### 3.1 Task 1 — `spawn.c` (20 points)
 
-A correct run prints the start line, four `worker …` lines in any order, four
-`reaped pid … status …` lines, and `spawn done, reaped 4`:
+**What to write.** Start `N_WORKERS` copies of `./worker` with `fork()` and
+`exec`, each told its own index. Then collect every one of them and report the
+status it exited with.
+
+**A correct run prints** the start line, four `worker …` lines in any order,
+four `reaped …` lines, and the total:
 
 ```console
 spawn pid 2000 starting 4 workers
@@ -107,42 +115,35 @@ reaped pid 2004 status 3
 spawn done, reaped 4
 ```
 
-**Checked:** each worker ran with its own index and reports **spawn's own pid**
-as its parent (15); every child was reaped and the status reported is the one
-the worker chose, not the raw value `waitpid()` gives you (10).
+**How it is checked.** Two separate rows:
 
-### 4.2 Task 2 — `pipeline.c` (25 points)
+| | Points |
+| --- | --- |
+| Each worker ran with its own index and reports **spawn's own pid** as its parent | 12 |
+| Every child was reaped, and the status reported is the one the worker chose — not the raw value `waitpid()` writes | 8 |
 
-Do by hand what the shell does for `./emit | ./count`: one pipe, two children,
-each with the right end wired to the right standard stream, and every descriptor
-nobody needs closed.
+### 3.2 Task 2 — `pipeline.c` (20 points)
 
-A correct run prints exactly one line and exits:
+**What to write.** Do by hand what the shell does for `./emit | ./count`: one
+pipe, two children, each with the right end wired to the right standard stream,
+and every descriptor nobody needs closed.
+
+**A correct run prints exactly one line, then exits:**
 
 ```console
 count 5
 ```
 
-**Checked:** `count 5` appears and the program exits on its own (25). If the
-plumbing works but the program never finishes, a write end is still open
-somewhere and `./count` never sees end of file — partial credit (15).
+**How it is checked.** `count 5` appears and the program exits on its own, for
+the full 20. If the plumbing works but the program never finishes, a write end
+is still open somewhere and `./count` never sees end of file — that earns **12
+of 20**, because the `dup2` and the `exec` demonstrably worked.
 
-### 4.3 Task 3 — `fifo_round.c` (15 points)
+### 3.3 Task 3 — `guard.c` (30 points)
 
-Create the FIFO `exam_fifo`, have the child write `ping` through it, have the
-parent read it and print `got ping`, and leave no FIFO behind.
-
-```console
-got ping
-```
-
-**Checked:** the message arrives (10); `exam_fifo` is gone when the program
-exits (5).
-
-### 4.4 Task 4 — `guard.c` (15 points)
-
-Install the two handlers with `sigaction()`, block `SIGINT` while the critical
-section runs, unblock it afterwards, then arm a one-second alarm and wait for it.
+**What to write.** Install the two handlers with `sigaction()`. Block `SIGINT` —
+only `SIGINT` — while the critical section runs, unblock it afterwards, then arm
+a one-second alarm and wait for it.
 
 **While grading, a `SIGINT` is sent 200 ms in — during the critical section,
 which lasts 400 ms.** A correct program therefore prints, in this order:
@@ -154,67 +155,83 @@ interrupted
 alarm fired
 ```
 
-`interrupted` after `critical 2` is the whole point: a blocked signal is held,
-not lost, and it arrives when you unblock it.
+`interrupted` appearing **after** `critical 2` is the whole point: a blocked
+signal is held, not lost, and it is delivered the moment you unblock it.
 
-**Checked:** `interrupted` appears only after `critical 2` (10); the alarm fires
-and the program exits (5).
+**How it is checked.** Two separate rows:
 
-## 5. The written questions — `answers.md` (20 points)
+| | Points |
+| --- | --- |
+| `interrupted` appears, and only after `critical 2` | 20 |
+| The alarm fires and the program exits on its own | 10 |
 
-Four questions, 5 points each, marked by hand. Two or three sentences each is
-plenty — a precise short answer scores better than a vague long one.
+### 3.4 Task 4 — `watchdog.c` (30 points)
 
-1. **Context switching.** What does the kernel save and restore when it switches
-   the CPU between processes, and why is a context switch not free?
-2. **Across `fork()` and `exec()`.** Two things a child inherits from its parent,
-   one thing that differs; then one thing `exec()` replaces and one that survives.
-3. **File descriptors and the file system.** After `fork()`, what exactly do
-   parent and child share through the same open file — and what happens to a
-   file's data if one process `unlink()`s its name while the other still has it
-   open?
-4. **Zombies and orphans.** Define each, and name the call or mechanism that
-   stops each from being a problem.
+**What to write.** A `read()` that never returns is a hung program. Give it a
+deadline: install a `SIGALRM` handler, arm an alarm, and then tell the two
+outcomes apart — the data arrived, or the alarm interrupted the read.
 
-**A blank template scores zero.** Answer these even if your code is unfinished —
-they are 20 of the 100 points and they need no compiler.
+**The pipe, the `fork()` and the child are already written for you.** Your work
+is the three TODOs: the handler, the alarm, and a `read()` that knows why it
+came back.
 
-## 6. Submitting
+The grader runs your program **both ways**, passing the argument itself:
+
+```console
+$ ./watchdog fast        # the child answers after 0.3 s
+got hello
+done
+
+$ ./watchdog slow        # the child never answers
+timed out
+done
+```
+
+Either way the program must print `done` and exit. **It must never hang.**
+
+**The one subtlety, and it is the point of the task:** do *not* set
+`SA_RESTART` on this handler. With `SA_RESTART`, the kernel resumes the
+interrupted `read()` and your program waits for ever. Without it, `read()`
+returns `-1` with `errno` set to `EINTR`, which is how you learn the deadline
+passed.
+
+**How it is checked.** Two separate rows:
+
+| | Points |
+| --- | --- |
+| `./watchdog fast` reads the answer and reports `got hello` | 10 |
+| `./watchdog slow` reports `timed out` and still exits cleanly | 20 |
+
+## 4. Submitting
 
 ```bash
-git add spawn.c pipeline.c fifo_round.c guard.c answers.md
+git add spawn.c pipeline.c guard.c watchdog.c
 git commit -m "exam 1"
 git push
 ```
 
 Push as you go rather than all at the end: a push that fails at 11:58 PM is not
-a submission. The autograder runs on every push and you can read its result.
+a submission. The autograder runs on every push and you can read its result in
+the Actions tab and in the release it creates.
 
-Do not commit the built programs or `exam_fifo` — `.gitignore` already excludes
-them.
+Do not commit the built programs — `.gitignore` already excludes them.
 
-### Mistakes that cost points
+## 5. Mistakes That Cost Points
 
 | Symptom | Cause |
 | --- | --- |
 | `worker` reports a parent that is not `spawn`'s pid | The `exec` is not guarded by `if (pid == 0)`, so the parent replaced itself |
 | `reaped … status 256` or similar | Use `WEXITSTATUS()` on what `waitpid()` writes, not the raw value |
 | `pipeline` never finishes | A write end of the pipe is still open — the parent must close both after forking |
-| `fifo_round` hangs with no output | Opening a FIFO blocks until the other end is open too; check which side opens which |
-| `exam_fifo` still there afterwards | `unlink()` it before the program exits |
 | `interrupted` printed before `critical 2` | `SIGINT` was not blocked around the critical section |
+| `watchdog slow` hangs for ever | No alarm was armed, or the handler was installed with `SA_RESTART` |
+| `watchdog slow` dies with "Alarm clock" | The alarm fired with no handler installed, so the default action killed the program |
 | Nothing graded after a push | Check the Actions tab on your repository for the run |
 
-## 7. Getting help
+## 6. Getting Help
 
 During the exam: **no help with the exam content.** If something is broken —
 the repository will not clone, Actions will not run — message on Discord and say
 it is Exam 1.
 
 Office hours and TA contact details are in the syllabus.
-
-## Revision history
-
-| Date | Change |
-| --- | --- |
-| 2026-10-13 | Written for Exam 1, Thursday October 15. |

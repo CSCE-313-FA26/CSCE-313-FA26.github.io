@@ -2,7 +2,7 @@
 layout: exam
 title: "Exam 1 — Instructions"
 exam_number: 1
-exam_title: "Instructions"
+exam_title: "Exam 1 — Instructions"
 course: "CSCE 313 · Introduction to Computer Systems"
 term: "Fall 2026"
 instructor: "David Kebo Houngninou"
@@ -24,8 +24,7 @@ description: "How Exam 1 works: a two-hour take-home coding exam on October 15, 
 
 ## 1. Description
 
-Exam 1 is a **coding exam**, with some written questions. It works the same way
-as the in-class activities:
+Exam 1 is a **coding exam**. It works the same way as the in-class activities:
 
 1. Accept the exam repository.
 2. Clone it.
@@ -34,10 +33,12 @@ as the in-class activities:
 
 It is a **take-home** exam. **There is no class on Thursday, October 15.**
 
-The exam is out of **100**: four coding tasks, graded by running your code, worth
-**80**, and four short written questions, marked by hand, worth **20**. Answer
-the written questions even if your code is unfinished — a blank answer sheet
-scores zero.
+The exam is out of **100**, and **every point is scored by running your code**.
+There is nothing to write up and nothing marked by hand: four C programs, worth
+20, 20, 30 and 30. The two 30-point tasks are the signal work from Lab 4.
+
+The four tasks are **independent** — a task you cannot finish does not block any
+other.
 
 ## 2. Date, Time and Duration
 
