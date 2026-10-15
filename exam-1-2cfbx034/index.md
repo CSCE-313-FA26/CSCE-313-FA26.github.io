@@ -28,13 +28,8 @@ You are given four C files. Each one is complete except for a few marked
 written, and you fill in the lines that do the actual work. Across the four
 files that comes to roughly **65 lines of code**.
 
-**You are graded on what your programs do when they are run.** The autograder
-compiles each one, runs it, and reads what it prints — nobody reads your source.
-So code that looks correct but does not compile, or prints something other than
-the line a check is looking for, earns nothing for that check.
-
-Before you push you can run those same checks yourself, as often as you like:
-the command is `make test`, in section 2.
+Before you push you can run the autograder's checks yourself, as often as you
+like: the command is `make test`, in section 2.
 
 | Task | File | Points | What it is about |
 | --- | --- | --- | --- |
