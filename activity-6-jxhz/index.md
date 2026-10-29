@@ -209,16 +209,59 @@ for the race. Any correct way of threading it scores full marks.
 
 Do not commit the built program — `.gitignore` already excludes it.
 
-## 9. If you finish early
+## 9. What the two sections actually win you
+
+Your two sections speed the program up for **different reasons**, and only one
+of them is limited by your hardware. These are measured numbers, three runs each,
+median reported.
+
+**Section 2 is exact, and the same on every machine.** `sleep(1)` uses no CPU,
+so N sleeps that overlap take one second however many cores you have:
+
+| Threads | Serial loop | Threaded | Speedup |
+| --- | --- | --- | --- |
+| 2 | 2.0003 s | 1.0004 s | **2.00×** |
+| 4 | 4.0005 s | 1.0004 s | **4.00×** |
+
+The spread across runs was 0.2 **milliseconds**. This is why the grader checks
+part 2's duration and not part 1's.
+
+**Section 1 is bounded by the number of cores you have.** It is real work, so
+threads only help while there is a free core to run them on. On a 2-core
+machine:
+
+| Threads | Part 1 | Speedup |
+| --- | --- | --- |
+| 1 | 3.875 s | 1.00× |
+| 2 | 2.118 s | 1.83× |
+| 4 | 1.970 s | 1.97× |
+| 8 | 2.023 s | 1.91× |
+
+**Your absolute times will not match these** — they depend on the machine, its
+core count and how many other people are logged into it. What should hold
+everywhere is the *shape*: part 1 improves up to about the number of cores
+available and then flattens, while part 2 goes to one second and stays there.
+Run `nproc` to see how many cores you have, and check the shape against it.
+
+Across all of these runs π was `3.141593` every time. Threading changed the
+time, never the answer.
+
+## 10. If you finish early
 
 None of this is submitted — it is here if you have time left.
 
-- Raise `NUM_THREADS` to 4 and run it again. Part 1 should get faster up to the
-  number of cores you have and then stop improving. Why?
+- Raise `NUM_THREADS` to 4 and 8 and time part 1 on *your* machine. Compare the
+  point where it flattens against `nproc`. Why does it flatten there, and why can
+  8 threads come out slightly *slower* than 4?
 - `PAD` exists to stop two threads' partial sums sharing a cache line. Set
   `PAD` to 1 and time part 1 again. The answer stays correct — only the speed
-  changes. That is **false sharing**.
+  changes. Measured here it cost **39%** (2.856 s against 2.054 s, two threads).
+  That is **false sharing**: work out what the two cores are fighting over, given
+  that neither thread ever touches the other's slot.
 - Replace `mtx.lock()` / `mtx.unlock()` with `lock_guard<mutex>` in a scope of
   its own. It is shorter, and it still unlocks if the critical section throws.
 - Make `pi` a `std::atomic<double>` and drop the mutex entirely. Does part 2
   still take one second?
+- Build without the sanitizers (`g++ -std=c++17 -O2 -pthread -o main main.cpp`)
+  and time part 1 again. AddressSanitizer roughly doubles it — which is a fair
+  price for catching the bugs it catches, but worth knowing when you measure.
