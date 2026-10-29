@@ -14,10 +14,12 @@ layout: base
         <dt>Format</dt>
         <dd>In class, supervised</dd>
       </div>
+      {% if page.duration %}
       <div class="lab-dates__item lab-dates__item--due">
         <dt>Time</dt>
-        <dd><strong>{{ page.duration | default: "10–15 minutes" }}</strong></dd>
+        <dd><strong>{{ page.duration }}</strong></dd>
       </div>
+      {% endif %}
     </dl>
   </header>
 

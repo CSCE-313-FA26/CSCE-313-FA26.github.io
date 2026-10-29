@@ -7,8 +7,7 @@ course: "CSCE 313 · Introduction to Computer Systems"
 term: "Fall 2026"
 relates_to: "Lab 5"
 listed: false        # reachable by direct link, not shown in the index
-duration: "20 minutes"
-description: "A program approximates pi with a Riemann sum, one rectangle at a time, on a single thread. Split the work across threads and make the shared total safe."
+description: "A program approximates pi by adding up a billion rectangles on one thread. Split the work across threads, and make the shared total safe."
 ---
 
 <nav class="toc" aria-labelledby="toc-heading" markdown="1">
@@ -19,74 +18,117 @@ description: "A program approximates pi with a Riemann sum, one rectangle at a t
 {:toc}
 </nav>
 
-## 1. What you are doing
+**Background reading:** <https://dotink.co/posts/pi-by-riemann-sum/> — the method
+this program uses, worked through from the beginning. Read it first if the
+formula below is unfamiliar.
 
-A program approximates **π** by cutting the area under a curve into a billion
-thin rectangles and adding them up. It works, and it is slow, because it does
-everything on one thread.
+## 1. Description
 
-You will parallelize it in two places:
+You are given a working program that computes **π** to six correct decimal
+places. It is correct and it is slow, because it does all of its work on a
+single thread.
 
-- **Section 1** splits the billion rectangles across `NUM_THREADS` threads.
-  Each thread owns its own slot in `sum[][]`, so nothing needs locking here.
-- **Section 2** adds those partial sums into one shared `pi`. Every thread
-  writes the *same* variable, so this one does need locking.
+Your job is to parallelize it in two places, and those two places need
+*different* things from you:
 
-That contrast is the whole point of the exercise: **partition the data and you
-need no synchronisation; share one variable and you do.**
+- **Section 1** divides a billion rectangles among `NUM_THREADS` threads. Each
+  thread writes only to its own slot in the `sum` array, so **no locking is
+  needed here at all.**
+- **Section 2** adds those partial results into one shared variable, `pi`. Every
+  thread writes *the same* variable, so **this one does need locking.**
+
+That contrast is the point of the exercise. Dividing data between threads is
+free; sharing one variable between threads costs you a mutex. Knowing which
+situation you are in is most of what concurrency is.
 
 **Work in pairs.** Sit with one partner and solve it together, talking through
 each step. **Each of you accepts and pushes your own repository**, and each of
-you is graded on your own push — so both partners get a score, and neither of
-you is stuck if the other has to leave.
+you is graded on your own push, so both partners receive a score and neither of
+you is blocked if the other has to leave.
 
-## 2. Rules
+## 2. How the Program Approximates π
 
-<aside class="callout callout--warn" aria-labelledby="rules-heading">
-<h2 class="callout__title" id="rules-heading">No AI. In class. Proctored.</h2>
-<p><strong>No artificial intelligence of any kind.</strong> No Codex, no Cursor,
-no ChatGPT, no Claude, no Copilot, no Gemini, and no other code-generating or
-code-completing assistant. <strong>Turn AI completion off in your editor before
-you begin.</strong></p>
-<p><strong>This activity is completed in class, under Honorlock.</strong> Work
-done outside class does not count.</p>
-<p><strong>We will give you the Honorlock instructions when the activity is
-released.</strong> They are not on this page — wait for them, and do not start
-the proctored session until you are told to.</p>
-</aside>
+### 2.1 Where the formula comes from
+
+The derivative of `arctan(x)` is `1 / (1 + x²)`, so integrating that function
+from 0 to 1 gives `arctan(1) − arctan(0)`, which is `π/4 − 0`. Multiply through
+by 4 and you have an integral whose exact value is π:
+
+> **π = ∫₀¹ 4 / (1 + x²) dx**
+
+Nothing about this is approximate yet. The approximation comes from how the
+program evaluates that integral.
+
+### 2.2 Turning the integral into a sum
+
+An integral is the exact area under a curve. The program estimates that area the
+way a **Riemann sum** does: slice the interval from 0 to 1 into `n` vertical
+strips of equal width, treat each strip as a rectangle, and add up the
+rectangles. More strips means thinner rectangles, which hug the curve more
+closely, which means a better answer.
+
+Two choices make this concrete:
+
+- **The width of each rectangle** is `step = 1 / n`. In the code, `n` is
+  `num_steps`, and it is **1,000,000,000** — a billion rectangles.
+- **The height of each rectangle** is the curve's value at the **midpoint** of
+  that rectangle's base, not at its left or right edge. For rectangle `i`, the
+  midpoint sits at `x = (i + ½) × step`, so the height is `4 / (1 + x²)`.
+
+Using the midpoint matters. A left-edge or right-edge rectangle sits entirely
+below or entirely above a curve that is falling, so those errors all lean the
+same way and accumulate. A midpoint rectangle overshoots the curve on one half
+of its base and undershoots it on the other, and the two errors largely cancel.
+That is why a midpoint sum is accurate enough to give six correct digits here.
+
+Add the rectangles up and multiply by their shared width:
+
+> **π ≈ step × Σ 4 / (1 + x²)**, summed over the `n` midpoints `x = (i + ½) × step`
+
+### 2.3 How that maps onto the code
+
+`single_sum_thread` is exactly that sum, and it is already written for you:
+
+```cpp
+for (long long int i = id; i < num_steps; i = i + num_threads)
+{
+    x = (i + 0.5) * step;              // the midpoint of rectangle i
+    sum[id][0] += 4.0 / (1.0 + x * x); // its height
+}
+```
+
+Two details worth noticing:
+
+- **`step` is multiplied in at the very end**, not once per rectangle. Every
+  rectangle has the same width, so `Σ (height × step)` equals
+  `step × Σ height`. Factoring it out removes a billion multiplications. That
+  final multiply is the `sum[id][0] * step` you will write in Section 2.
+- **The loop strides by `num_threads`, not by 1.** Thread 0 takes rectangles
+  0, 2, 4, …; thread 1 takes 1, 3, 5, …. Every rectangle is still counted
+  exactly once, so the total is identical no matter how many threads you use —
+  only the time changes. Each thread accumulates into `sum[id][0]`, its own
+  slot, which is why Section 1 needs no mutex.
+
+The answer does not depend on the number of threads. Verify that as you go: π
+should read `3.141593` at one thread, at two, and at eight.
+
+## 3. Rules
+
+**No artificial intelligence of any kind.** No Codex, no Cursor, no ChatGPT, no
+Claude, no Copilot, no Gemini, and no other code-generating or code-completing
+assistant. Turn AI completion off in your editor before you begin.
+
+**This activity is completed in class, under Honorlock.** Work done outside
+class does not count. **We will give you the Honorlock instructions when the
+activity is released** — they are not on this page, so wait for them, and do not
+start the proctored session until you are told to.
 
 What you **may** use: the Lab 5 handout, your own Lab 5 work, your notes, the
 `man` pages, and [cppreference](https://en.cppreference.com/) for `std::thread`
-and `std::mutex`. You are working in a pair, so talking to your partner about
-the code is expected. The code you push must be code the two of you wrote.
+and `std::mutex`. You are working in a pair, so discussing the code with your
+partner is expected. The code you push must be code the two of you wrote.
 
-## 3. The maths, in one paragraph
-
-You do not need to do any calculus here, but you should know what the program is
-computing so the output means something to you.
-
-The area under the curve `4 / (1 + x*x)` between `x = 0` and `x = 1` is exactly
-π. That is the whole trick — integrating that one function over that one
-interval gives `4 * arctan(1)`, which is π.
-
-```
-          1
-         /       4
-  pi =  |   ----------- dx
-         /   1 + x * x
-        0
-```
-
-The program approximates that integral with a **midpoint Riemann sum**: it cuts
-`[0, 1]` into `num_steps` rectangles of width `step`, evaluates the height
-`4 / (1 + x²)` at the **midpoint** of each one, adds the heights up, and
-multiplies by `step` at the end. More rectangles means a closer answer; the
-starter uses a billion of them, which is why Section 1 takes a few seconds.
-
-If you want the longer version, it is written up here:
-<https://dotink.co/posts/pi-by-riemann-sum/>.
-
-## 4. Get your repository
+## 4. Getting Your Repository
 
 1. Sign in to [classroom50.org](https://classroom50.org/) with your GitHub account.
 2. Accept the activity:
@@ -105,9 +147,9 @@ uses `-Wall -Wextra` and AddressSanitizer, so keep it warning-free as you go.
 You change **`main.h`** and **`main.cpp`**, and those are the only two files
 graded. The `makefile` is replaced by the grader, so editing it changes nothing.
 
-## 5. See the problem first
+## 5. Running the Unmodified Program
 
-Run it before you change anything:
+Run it before changing anything:
 
 ```bash
 ./main
@@ -124,39 +166,92 @@ Time to complete part 2: 2.000324 seconds
 
 Two things to notice, and they are the two things you are going to fix:
 
-- **`Pi approximation: 0.000000`.** Section 1 is empty, so no partial sum is
-  ever computed and `sum[][]` is still all zeroes.
+- **`Pi approximation: 0.000000`.** Section 1 is empty, so no rectangle is ever
+  computed and the `sum` array is still all zeroes. The program is adding up
+  nothing.
 - **Part 2 takes 2 seconds.** The serial loop calls `sleep(1)` once per thread's
-  worth of work, one after another. Two sleeps that *wait for each other* take
-  two seconds. Two sleeps that *overlap* take one.
+  worth of work, one call after another. Two sleeps that *wait for each other*
+  take two seconds; two sleeps that *overlap* take one.
 
-## 6. The four TODOs
+## 6. The Four Tasks
 
-They are numbered in the files. Do them in order — TODO 3 is the one that makes
-π correct, and it is worth starting there.
+They are marked `TODO 1` to `TODO 4` in the files. Do them in order. TODO 3 is
+the one that makes π correct, so you will see progress soonest by starting
+there, but TODO 1 and 2 are listed first because Section 2 cannot compile
+without them.
 
-| TODO | File | What it is |
-| --- | --- | --- |
-| 1 | `main.h` | Declare the synchronisation primitive Section 2 needs |
-| 2 | `main.h` | Write `pi_sum_thread` — its parameters and its body |
-| 3 | `main.cpp` | Section 1: run `single_sum_thread` on `NUM_THREADS` threads |
-| 4 | `main.cpp` | Section 2: replace the serial loop with threads |
+### TODO 1 — declare the mutex (`main.h`)
 
-Three things that are easy to get wrong:
+One line, at file scope, next to the other globals.
 
-1. **Join every thread before the section ends.** If you read `sum[][]` or `pi`
-   before the threads that write them have finished, you read a half-finished
-   answer. This is the same mistake as a `ThreadPool` destructor that does not
-   join.
-2. **`pi` must be *shared*, not copied.** Every thread has to update the one
-   `pi` in `main`, so pass it by pointer or by reference. A thread that updates
-   its own copy changes nothing.
-3. **Keep `sleep(1)` outside the critical section.** Lock, update `pi`, unlock,
-   *then* sleep. If you hold the mutex across the sleep, the threads queue up
-   waiting for it and part 2 takes 2 seconds again — you will have written
-   threaded code that performs exactly like the serial loop.
+Section 2 will run `pi_sum_thread` on several threads at once, and all of them
+add into the same `pi`. A `+=` on a `double` is not one indivisible operation —
+it is a load, an add, and a store. Two threads interleaving those steps can each
+read the same old value and each write back their own total, and one of the two
+contributions is simply lost. A `std::mutex` is what guarantees that one thread
+finishes its load-add-store before another begins.
 
-## 7. What a correct run looks like
+Declare it where every thread can reach it. A mutex local to the function would
+give each thread its own, which protects nothing.
+
+### TODO 2 — write `pi_sum_thread` (`main.h`)
+
+The stub has **no parameters** and an empty body. You decide its signature, then
+write three lines of real work. It needs four things:
+
+| It needs | Why |
+| --- | --- |
+| which partial sum to add | so each thread handles a different slot of `sum` |
+| the step size | the rectangle width that was factored out of the loop |
+| the shared `pi` | **by pointer or by reference, never by value** — a thread that updates its own copy changes nothing the rest of the program can see |
+| the `sum` array | to read its own partial result out of |
+
+The body does one multiply and one add — `pi += sum[id][0] * step` — with the
+mutex locked around it, and nothing else inside the lock.
+
+**Leave `sleep(1)` outside the critical section.** It is already in the stub, at
+the bottom. It stands in for a long-running task, and it is what makes the
+difference between serial and parallel visible. If you hold the mutex while you
+sleep, the other threads queue up waiting for it, part 2 takes 2 seconds again,
+and you will have written threaded code that performs exactly like the serial
+loop you replaced. **A critical section should contain the shared update and
+nothing else.**
+
+### TODO 3 — thread Section 1 (`main.cpp`)
+
+Run the function you were given, `single_sum_thread`, on `NUM_THREADS` threads
+instead of not at all. Three steps:
+
+1. Make a `std::vector<std::thread>` to hold the thread objects. You need to
+   keep them somewhere: a `std::thread` you never join and then destroy calls
+   `std::terminate` and kills the program.
+2. Start one thread per worker, passing each its own `id` from `0` to
+   `NUM_THREADS - 1`, along with `nthreads` and `sum`. The `id` is what tells a
+   thread which rectangles are its own and which slot to write.
+3. **Join every thread before the section ends.** The partial sums are not all
+   written until the last thread has finished, so reading `sum` before then
+   reads a half-finished answer. This is the same requirement as a `ThreadPool`
+   destructor that must join its workers.
+
+No mutex anywhere in this section — each thread owns its slot.
+
+### TODO 4 — thread Section 2 (`main.cpp`)
+
+Replace the serial loop with `NUM_THREADS` threads running the `pi_sum_thread`
+you wrote in TODO 2. Same three steps as TODO 3: a vector, a loop that starts
+the threads, a loop that joins them.
+
+Two things specific to this section:
+
+- **Delete the serial loop** once your version works. Leaving it in means every
+  partial sum is added twice and π comes out around 6.28.
+- **The `sleep(1)` is already inside `pi_sum_thread`.** Do not add another one
+  here.
+
+Join these threads too. `pi` is not complete until the last one has returned,
+and the `printf` that follows reads it.
+
+## 7. Expected Output
 
 ```
 Number of threads: 2
@@ -168,10 +263,132 @@ Time to complete part 2: 1.000955 seconds
 ```
 
 `Pi approximation: 3.141593` and **part 2 at about one second** are the two
-numbers that matter. Part 1's time depends on the machine and on how loaded it
-is, so do not expect to match the number above — expect it to be a few seconds.
+results that matter. Part 1's time depends on the machine and on how many other
+people are logged into it, so do not expect to match the number above — expect
+it to be a few seconds.
 
-## 8. Submitting
+## 8. Cache Lines and False Sharing
+
+This section is not graded and nothing here needs changing. It explains the
+strangest line in the program, and it is the reason the `sum` array has a second
+dimension that is never used.
+
+### 8.1 Why `sum` is two-dimensional
+
+The array is declared `double sum[NUM_THREADS][PAD]`, with `PAD` set to 8, and
+every thread only ever touches `sum[id][0]`. Seven of every eight doubles are
+**deliberately wasted**. `sum[NUM_THREADS]` would hold every value the program
+actually reads.
+
+That waste buys speed, and to see why you need to know how a CPU reads memory.
+
+### 8.2 Caches move lines, not bytes
+
+A CPU never fetches a single byte from RAM. It fetches a fixed-size block called
+a **cache line** — **64 bytes** on every x86-64 machine you will use — and
+stores the whole line in its cache. Ask for one `double` and you get the 64-byte
+line containing it, which is eight `double`s.
+
+That is what the program's second output line reports:
+
+```
+Cache padding for coherency: 64 bytes
+```
+
+`PAD * 8` is 8 doubles × 8 bytes = **64 bytes**, exactly one cache line. So
+`sum[0]` fills one line and `sum[1]` fills the next, and the two threads'
+accumulators land in **different** lines.
+
+### 8.3 Why that matters: cache coherency
+
+Each core has its own cache, so the same line can sit in several caches at once.
+The hardware has to keep those copies consistent, and the rule it enforces is
+blunt: **when one core writes to a line, every other core's copy of that line is
+invalidated.** Any core that wants it again must re-acquire it.
+
+Now put both accumulators in one line, which is what `PAD = 1` does — `sum[0][0]`
+and `sum[1][0]` end up 8 bytes apart, comfortably inside the same 64 bytes. The
+inner loop of `single_sum_thread` writes its accumulator on **every one of five
+hundred million iterations**, so:
+
+1. Core 0 writes `sum[0][0]`. Core 1's copy of the line is invalidated.
+2. Core 1 writes `sum[1][0]`. It must re-acquire the line, and now core 0's copy
+   is invalidated.
+3. Repeat, hundreds of millions of times.
+
+The line ping-pongs between the two caches, and each bounce costs far more than
+the arithmetic it is protecting.
+
+### 8.4 Why it is called *false* sharing
+
+Nothing is actually shared. Thread 0 never reads or writes thread 1's
+accumulator, and vice versa. There is no race, no missing mutex, and the answer
+is correct to the last digit. The two cores are fighting over **the line that
+happens to contain both variables**, not over any value either of them uses.
+Hence *false* sharing: the contention is an artifact of memory layout, not of
+the program's logic.
+
+This is why it is such a nasty class of bug. It never produces a wrong answer,
+so no test catches it — it only makes correct code slow, and it is invisible in
+the source. `sum[id][0] += …` looks completely private, and it is. The problem
+is the address it lands on.
+
+### 8.5 What it costs, measured
+
+Same program, same two threads, same correct answer, only `PAD` changed:
+
+| `PAD` | Layout | Part 1 |
+| --- | --- | --- |
+| 1 | both accumulators in one cache line | 2.856 s |
+| 8 | each accumulator in its own line | 2.054 s |
+
+**A 39% penalty, 1.39× slower**, for a layout difference of 56 unused bytes.
+
+One caveat on reproducing this: the build uses no optimisation, so every `+=`
+really is a load and a store to memory. With `-O2` the compiler would likely
+keep the accumulator in a register for the whole loop and write it back once,
+which hides the effect entirely. False sharing bites hardest on code that
+repeatedly writes to memory that other cores also hold.
+
+The general rule: **when threads write to nearby memory, pad the data so each
+thread's part gets its own cache line.** Lay out per-thread state so that
+threads working independently also *touch memory* independently.
+
+## 9. Measured Results
+
+Three runs of each configuration, median reported, on a 2-core machine.
+
+**Section 2 is exact, and the same on every machine.** `sleep(1)` uses no CPU,
+so N sleeps that overlap take one second however many cores you have:
+
+| Threads | Serial loop | Threaded | Speedup |
+| --- | --- | --- | --- |
+| 2 | 2.0003 s | 1.0004 s | **2.00×** |
+| 4 | 4.0005 s | 1.0004 s | **4.00×** |
+
+The spread across runs was 0.2 **milliseconds**. This is why the grader checks
+part 2's duration and not part 1's.
+
+**Section 1 is bounded by the number of cores available.** It is real work, so
+threads only help while there is a free core to run them on:
+
+| Threads | Part 1 | Speedup |
+| --- | --- | --- |
+| 1 | 3.875 s | 1.00× |
+| 2 | 2.118 s | 1.83× |
+| 4 | 1.970 s | 1.97× |
+| 8 | 2.023 s | 1.91× |
+
+**Your absolute times will not match these** — they depend on the machine, its
+core count and how many other people are using it. What should hold everywhere
+is the *shape*: part 1 improves up to roughly the number of cores available and
+then flattens, while part 2 drops to one second and stays there. Run `nproc` to
+see your core count, and check the shape against it.
+
+Across all of these runs π was `3.141593` every time. Threading changed the
+time, never the answer.
+
+## 10. Submitting
 
 ```bash
 git add main.h main.cpp
@@ -180,8 +397,8 @@ git push
 ```
 
 The autograder runs on every push, so push as often as you like and read the
-result. Points are awarded per behaviour, so partial work is worth partial
-credit — a correct Section 1 on its own is worth 55.
+result. Points are awarded per behaviour, so partial work earns partial credit —
+a correct Section 1 on its own is worth 55.
 
 | Check | Points |
 | --- | --- |
@@ -195,7 +412,7 @@ credit — a correct Section 1 on its own is worth 55.
 | --- | --- |
 | `g++ failed` | Fix the error `g++` prints, then push again |
 | `never had more than 1 thread(s) running` | Section 1 is still empty — TODO 3 |
-| `printed 0.000000` | Same thing: no partial sum was ever written |
+| `printed 0.000000` | Same thing: no rectangle was ever computed |
 | `threads were created but the work was not split` | You called `single_sum_thread` directly instead of handing it to a `std::thread` |
 | `saw at most 1 thread(s) during the ... sleeping` | Section 2 is still the serial loop — TODO 4 |
 | `took 2.02 s ... instead of about 1 s` | The mutex is held across `sleep(1)` — move the sleep out |
@@ -203,65 +420,25 @@ credit — a correct Section 1 on its own is worth 55.
 
 **Nothing is graded by reading your source.** A threaded version and a serial
 version print the same π, so the grader measures *behaviour* instead: it samples
-the thread count and the CPU use in `/proc` while your program runs, times the
+the thread count and CPU use in `/proc` while your program runs, times the
 sleeping phase from outside, and re-runs your code under ThreadSanitizer to look
-for the race. Any correct way of threading it scores full marks.
+for the race. Any correct way of threading it earns full marks.
 
 Do not commit the built program — `.gitignore` already excludes it.
 
-## 9. What the two sections actually win you
-
-Your two sections speed the program up for **different reasons**, and only one
-of them is limited by your hardware. These are measured numbers, three runs each,
-median reported.
-
-**Section 2 is exact, and the same on every machine.** `sleep(1)` uses no CPU,
-so N sleeps that overlap take one second however many cores you have:
-
-| Threads | Serial loop | Threaded | Speedup |
-| --- | --- | --- | --- |
-| 2 | 2.0003 s | 1.0004 s | **2.00×** |
-| 4 | 4.0005 s | 1.0004 s | **4.00×** |
-
-The spread across runs was 0.2 **milliseconds**. This is why the grader checks
-part 2's duration and not part 1's.
-
-**Section 1 is bounded by the number of cores you have.** It is real work, so
-threads only help while there is a free core to run them on. On a 2-core
-machine:
-
-| Threads | Part 1 | Speedup |
-| --- | --- | --- |
-| 1 | 3.875 s | 1.00× |
-| 2 | 2.118 s | 1.83× |
-| 4 | 1.970 s | 1.97× |
-| 8 | 2.023 s | 1.91× |
-
-**Your absolute times will not match these** — they depend on the machine, its
-core count and how many other people are logged into it. What should hold
-everywhere is the *shape*: part 1 improves up to about the number of cores
-available and then flattens, while part 2 goes to one second and stays there.
-Run `nproc` to see how many cores you have, and check the shape against it.
-
-Across all of these runs π was `3.141593` every time. Threading changed the
-time, never the answer.
-
-## 10. If you finish early
+## 11. Optional Extensions
 
 None of this is submitted — it is here if you have time left.
 
 - Raise `NUM_THREADS` to 4 and 8 and time part 1 on *your* machine. Compare the
-  point where it flattens against `nproc`. Why does it flatten there, and why can
-  8 threads come out slightly *slower* than 4?
-- `PAD` exists to stop two threads' partial sums sharing a cache line. Set
-  `PAD` to 1 and time part 1 again. The answer stays correct — only the speed
-  changes. Measured here it cost **39%** (2.856 s against 2.054 s, two threads).
-  That is **false sharing**: work out what the two cores are fighting over, given
-  that neither thread ever touches the other's slot.
+  point where it flattens against `nproc`. Why does it flatten there, and why
+  can 8 threads come out slightly *slower* than 4?
+- Set `PAD` to 1 and time part 1 again, then re-read section 8. Confirm the
+  answer is still correct and only the time moved.
 - Replace `mtx.lock()` / `mtx.unlock()` with `lock_guard<mutex>` in a scope of
   its own. It is shorter, and it still unlocks if the critical section throws.
 - Make `pi` a `std::atomic<double>` and drop the mutex entirely. Does part 2
   still take one second?
 - Build without the sanitizers (`g++ -std=c++17 -O2 -pthread -o main main.cpp`)
-  and time part 1 again. AddressSanitizer roughly doubles it — which is a fair
-  price for catching the bugs it catches, but worth knowing when you measure.
+  and time part 1 again. AddressSanitizer roughly doubles it — a fair price for
+  what it catches, but worth knowing when you measure.
