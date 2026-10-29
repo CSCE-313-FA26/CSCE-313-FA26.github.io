@@ -112,18 +112,9 @@ Two details worth noticing:
 The answer does not depend on the number of threads. Verify that as you go: π
 should read `3.141593` at one thread, at two, and at eight.
 
-## 3. Rules
+## 3. What You May Use
 
-**No artificial intelligence of any kind.** No Codex, no Cursor, no ChatGPT, no
-Claude, no Copilot, no Gemini, and no other code-generating or code-completing
-assistant. Turn AI completion off in your editor before you begin.
-
-**This activity is completed in class, under Honorlock.** Work done outside
-class does not count. **We will give you the Honorlock instructions when the
-activity is released** — they are not on this page, so wait for them, and do not
-start the proctored session until you are told to.
-
-What you **may** use: the Lab 5 handout, your own Lab 5 work, your notes, the
+The Lab 5 handout, your own Lab 5 work, your notes, the
 `man` pages, and [cppreference](https://en.cppreference.com/) for `std::thread`
 and `std::mutex`. You are working in a pair, so discussing the code with your
 partner is expected. The code you push must be code the two of you wrote.
