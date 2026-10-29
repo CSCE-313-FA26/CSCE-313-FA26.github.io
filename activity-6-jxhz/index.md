@@ -75,6 +75,54 @@ Two choices make this concrete:
   that rectangle's base, not at its left or right edge. For rectangle `i`, the
   midpoint sits at `x = (i + ½) × step`, so the height is `4 / (1 + x²)`.
 
+<figure class="diagram diagram--wide">
+<div class="diagram-scroll" tabindex="0" role="group" aria-label="Figure 1, scrollable">
+  <svg viewBox="0 0 760 350" role="img" aria-labelledby="fig1-title" xmlns="http://www.w3.org/2000/svg">
+    <title id="fig1-title">The midpoint Riemann sum: six rectangles under the curve 4/(1+x squared) between x equals 0 and x equals 1</title>
+    <desc>A falling curve runs from a height of 4 at x equals 0 to a height of 2 at x equals 1. Six rectangles of equal width stand under it, side by side, filling the area. Each rectangle's top edge meets the curve at a dot placed at the middle of that rectangle's base, so the top edge sits above the curve on the left half of the rectangle and below it on the right half. A bracket under the third rectangle is labelled step.</desc>
+    <defs>
+      <marker id="f1arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" class="d-arrow"/>
+      </marker>
+    </defs>
+
+    <path d="M 86.0 38.0 L 86.0 292.0" class="d-edge"/>
+    <path d="M 86.0 292.0 L 700.0 292.0" class="d-edge"/>
+    <path d="M 81.0 292.0 L 86.0 292.0" class="d-edge"/>
+    <text x="77.0" y="296.0" text-anchor="end" class="d-text--sm">0</text>
+    <path d="M 81.0 236.1 L 86.0 236.1" class="d-edge"/>
+    <text x="77.0" y="240.1" text-anchor="end" class="d-text--sm">1</text>
+    <path d="M 81.0 180.2 L 86.0 180.2" class="d-edge"/>
+    <text x="77.0" y="184.2" text-anchor="end" class="d-text--sm">2</text>
+    <path d="M 81.0 124.3 L 86.0 124.3" class="d-edge"/>
+    <text x="77.0" y="128.3" text-anchor="end" class="d-text--sm">3</text>
+    <path d="M 81.0 68.4 L 86.0 68.4" class="d-edge"/>
+    <text x="77.0" y="72.4" text-anchor="end" class="d-text--sm">4</text>
+    <rect x="86.0" y="69.9" width="100.0" height="222.1" class="d-box--brand"/>
+    <rect x="186.0" y="81.5" width="100.0" height="210.5" class="d-box--brand"/>
+    <rect x="286.0" y="101.4" width="100.0" height="190.6" class="d-box--brand"/>
+    <rect x="386.0" y="125.1" width="100.0" height="166.9" class="d-box--brand"/>
+    <rect x="486.0" y="148.9" width="100.0" height="143.1" class="d-box--brand"/>
+    <rect x="586.0" y="170.5" width="100.0" height="121.5" class="d-box--brand"/>
+    <path d="M 86.0 68.4 L 91.0 68.4 L 96.0 68.4 L 101.0 68.5 L 106.0 68.6 L 111.0 68.8 L 116.0 68.9 L 121.0 69.1 L 126.0 69.4 L 131.0 69.6 L 136.0 69.9 L 141.0 70.2 L 146.0 70.6 L 151.0 71.0 L 156.0 71.4 L 161.0 71.8 L 166.0 72.3 L 171.0 72.8 L 176.0 73.3 L 181.0 73.8 L 186.0 74.4 L 191.0 75.0 L 196.0 75.6 L 201.0 76.3 L 206.0 77.0 L 211.0 77.7 L 216.0 78.4 L 221.0 79.1 L 226.0 79.9 L 231.0 80.7 L 236.0 81.5 L 241.0 82.4 L 246.0 83.2 L 251.0 84.1 L 256.0 85.0 L 261.0 85.9 L 266.0 86.8 L 271.0 87.8 L 276.0 88.7 L 281.0 89.7 L 286.0 90.7 L 291.0 91.7 L 296.0 92.8 L 301.0 93.8 L 306.0 94.9 L 311.0 95.9 L 316.0 97.0 L 321.0 98.1 L 326.0 99.2 L 331.0 100.3 L 336.0 101.4 L 341.0 102.6 L 346.0 103.7 L 351.0 104.9 L 356.0 106.0 L 361.0 107.2 L 366.0 108.4 L 371.0 109.5 L 376.0 110.7 L 381.0 111.9 L 386.0 113.1 L 391.0 114.3 L 396.0 115.5 L 401.0 116.7 L 406.0 117.9 L 411.0 119.1 L 416.0 120.3 L 421.0 121.5 L 426.0 122.7 L 431.0 123.9 L 436.0 125.1 L 441.0 126.4 L 446.0 127.6 L 451.0 128.8 L 456.0 130.0 L 461.0 131.2 L 466.0 132.4 L 471.0 133.6 L 476.0 134.8 L 481.0 136.0 L 486.0 137.2 L 491.0 138.4 L 496.0 139.5 L 501.0 140.7 L 506.0 141.9 L 511.0 143.1 L 516.0 144.2 L 521.0 145.4 L 526.0 146.6 L 531.0 147.7 L 536.0 148.9 L 541.0 150.0 L 546.0 151.2 L 551.0 152.3 L 556.0 153.4 L 561.0 154.5 L 566.0 155.6 L 571.0 156.7 L 576.0 157.8 L 581.0 158.9 L 586.0 160.0 L 591.0 161.1 L 596.0 162.2 L 601.0 163.2 L 606.0 164.3 L 611.0 165.3 L 616.0 166.4 L 621.0 167.4 L 626.0 168.4 L 631.0 169.5 L 636.0 170.5 L 641.0 171.5 L 646.0 172.5 L 651.0 173.5 L 656.0 174.5 L 661.0 175.4 L 666.0 176.4 L 671.0 177.4 L 676.0 178.3 L 681.0 179.2 L 686.0 180.2" class="d-curve"/>
+    <circle cx="136.0" cy="69.9" r="3.5" class="d-dot"/>
+    <circle cx="236.0" cy="81.5" r="3.5" class="d-dot"/>
+    <circle cx="336.0" cy="101.4" r="3.5" class="d-dot"/>
+    <circle cx="436.0" cy="125.1" r="3.5" class="d-dot"/>
+    <circle cx="536.0" cy="148.9" r="3.5" class="d-dot"/>
+    <circle cx="636.0" cy="170.5" r="3.5" class="d-dot"/>
+    <text x="86.0" y="312.0" text-anchor="middle" class="d-text--sm">x = 0</text>
+    <text x="686.0" y="312.0" text-anchor="middle" class="d-text--sm">x = 1</text>
+    <text x="110.0" y="54.4" text-anchor="start" class="d-text--mono">4 / (1 + x²)</text>
+    <path d="M 286.0 324.0 L 386.0 324.0" class="d-edge" marker-start="url(#f1arrow)" marker-end="url(#f1arrow)"/>
+    <text x="336.0" y="340.0" text-anchor="middle" class="d-text--edge">step</text>
+    <path d="M 476.0 79.1 L 440.0 119.1" class="d-edge--muted"/>
+    <text x="480.0" y="77.1" text-anchor="start" class="d-text--sm">height taken at the midpoint</text>
+  </svg>
+</div>
+<figcaption>Figure 1 — Six rectangles standing in for the area under 4/(1 + x²). The program uses a billion of them instead of six; the thinner they get, the less of the curve they miss, and the closer the total gets to π.</figcaption>
+</figure>
+
 Using the midpoint matters. On a falling curve, a left-edge rectangle takes its
 height from the highest point of its base, so it sits entirely **above** the
 curve and is always too big; a right-edge rectangle takes the lowest point and
@@ -129,54 +177,6 @@ are ever added up. That is why a midpoint sum gives six correct digits here.
 Add the rectangles up and multiply by their shared width:
 
 > **π ≈ step × Σ 4 / (1 + x²)**, summed over the `n` midpoints `x = (i + ½) × step`
-
-<figure class="diagram diagram--wide">
-<div class="diagram-scroll" tabindex="0" role="group" aria-label="Figure 1, scrollable">
-  <svg viewBox="0 0 760 350" role="img" aria-labelledby="fig1-title" xmlns="http://www.w3.org/2000/svg">
-    <title id="fig1-title">The midpoint Riemann sum: six rectangles under the curve 4/(1+x squared) between x equals 0 and x equals 1</title>
-    <desc>A falling curve runs from a height of 4 at x equals 0 to a height of 2 at x equals 1. Six rectangles of equal width stand under it, side by side, filling the area. Each rectangle's top edge meets the curve at a dot placed at the middle of that rectangle's base, so the top edge sits above the curve on the left half of the rectangle and below it on the right half. A bracket under the third rectangle is labelled step.</desc>
-    <defs>
-      <marker id="f1arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" class="d-arrow"/>
-      </marker>
-    </defs>
-
-    <path d="M 86.0 38.0 L 86.0 292.0" class="d-edge"/>
-    <path d="M 86.0 292.0 L 700.0 292.0" class="d-edge"/>
-    <path d="M 81.0 292.0 L 86.0 292.0" class="d-edge"/>
-    <text x="77.0" y="296.0" text-anchor="end" class="d-text--sm">0</text>
-    <path d="M 81.0 236.1 L 86.0 236.1" class="d-edge"/>
-    <text x="77.0" y="240.1" text-anchor="end" class="d-text--sm">1</text>
-    <path d="M 81.0 180.2 L 86.0 180.2" class="d-edge"/>
-    <text x="77.0" y="184.2" text-anchor="end" class="d-text--sm">2</text>
-    <path d="M 81.0 124.3 L 86.0 124.3" class="d-edge"/>
-    <text x="77.0" y="128.3" text-anchor="end" class="d-text--sm">3</text>
-    <path d="M 81.0 68.4 L 86.0 68.4" class="d-edge"/>
-    <text x="77.0" y="72.4" text-anchor="end" class="d-text--sm">4</text>
-    <rect x="86.0" y="69.9" width="100.0" height="222.1" class="d-box--brand"/>
-    <rect x="186.0" y="81.5" width="100.0" height="210.5" class="d-box--brand"/>
-    <rect x="286.0" y="101.4" width="100.0" height="190.6" class="d-box--brand"/>
-    <rect x="386.0" y="125.1" width="100.0" height="166.9" class="d-box--brand"/>
-    <rect x="486.0" y="148.9" width="100.0" height="143.1" class="d-box--brand"/>
-    <rect x="586.0" y="170.5" width="100.0" height="121.5" class="d-box--brand"/>
-    <path d="M 86.0 68.4 L 91.0 68.4 L 96.0 68.4 L 101.0 68.5 L 106.0 68.6 L 111.0 68.8 L 116.0 68.9 L 121.0 69.1 L 126.0 69.4 L 131.0 69.6 L 136.0 69.9 L 141.0 70.2 L 146.0 70.6 L 151.0 71.0 L 156.0 71.4 L 161.0 71.8 L 166.0 72.3 L 171.0 72.8 L 176.0 73.3 L 181.0 73.8 L 186.0 74.4 L 191.0 75.0 L 196.0 75.6 L 201.0 76.3 L 206.0 77.0 L 211.0 77.7 L 216.0 78.4 L 221.0 79.1 L 226.0 79.9 L 231.0 80.7 L 236.0 81.5 L 241.0 82.4 L 246.0 83.2 L 251.0 84.1 L 256.0 85.0 L 261.0 85.9 L 266.0 86.8 L 271.0 87.8 L 276.0 88.7 L 281.0 89.7 L 286.0 90.7 L 291.0 91.7 L 296.0 92.8 L 301.0 93.8 L 306.0 94.9 L 311.0 95.9 L 316.0 97.0 L 321.0 98.1 L 326.0 99.2 L 331.0 100.3 L 336.0 101.4 L 341.0 102.6 L 346.0 103.7 L 351.0 104.9 L 356.0 106.0 L 361.0 107.2 L 366.0 108.4 L 371.0 109.5 L 376.0 110.7 L 381.0 111.9 L 386.0 113.1 L 391.0 114.3 L 396.0 115.5 L 401.0 116.7 L 406.0 117.9 L 411.0 119.1 L 416.0 120.3 L 421.0 121.5 L 426.0 122.7 L 431.0 123.9 L 436.0 125.1 L 441.0 126.4 L 446.0 127.6 L 451.0 128.8 L 456.0 130.0 L 461.0 131.2 L 466.0 132.4 L 471.0 133.6 L 476.0 134.8 L 481.0 136.0 L 486.0 137.2 L 491.0 138.4 L 496.0 139.5 L 501.0 140.7 L 506.0 141.9 L 511.0 143.1 L 516.0 144.2 L 521.0 145.4 L 526.0 146.6 L 531.0 147.7 L 536.0 148.9 L 541.0 150.0 L 546.0 151.2 L 551.0 152.3 L 556.0 153.4 L 561.0 154.5 L 566.0 155.6 L 571.0 156.7 L 576.0 157.8 L 581.0 158.9 L 586.0 160.0 L 591.0 161.1 L 596.0 162.2 L 601.0 163.2 L 606.0 164.3 L 611.0 165.3 L 616.0 166.4 L 621.0 167.4 L 626.0 168.4 L 631.0 169.5 L 636.0 170.5 L 641.0 171.5 L 646.0 172.5 L 651.0 173.5 L 656.0 174.5 L 661.0 175.4 L 666.0 176.4 L 671.0 177.4 L 676.0 178.3 L 681.0 179.2 L 686.0 180.2" class="d-curve"/>
-    <circle cx="136.0" cy="69.9" r="3.5" class="d-dot"/>
-    <circle cx="236.0" cy="81.5" r="3.5" class="d-dot"/>
-    <circle cx="336.0" cy="101.4" r="3.5" class="d-dot"/>
-    <circle cx="436.0" cy="125.1" r="3.5" class="d-dot"/>
-    <circle cx="536.0" cy="148.9" r="3.5" class="d-dot"/>
-    <circle cx="636.0" cy="170.5" r="3.5" class="d-dot"/>
-    <text x="86.0" y="312.0" text-anchor="middle" class="d-text--sm">x = 0</text>
-    <text x="686.0" y="312.0" text-anchor="middle" class="d-text--sm">x = 1</text>
-    <text x="110.0" y="54.4" text-anchor="start" class="d-text--mono">4 / (1 + x²)</text>
-    <path d="M 286.0 324.0 L 386.0 324.0" class="d-edge" marker-start="url(#f1arrow)" marker-end="url(#f1arrow)"/>
-    <text x="336.0" y="340.0" text-anchor="middle" class="d-text--edge">step</text>
-    <path d="M 476.0 79.1 L 440.0 119.1" class="d-edge--muted"/>
-    <text x="480.0" y="77.1" text-anchor="start" class="d-text--sm">height taken at the midpoint</text>
-  </svg>
-</div>
-<figcaption>Figure 1 — Six rectangles standing in for the area under 4/(1 + x²). The program uses a billion of them instead of six; the thinner they get, the less of the curve they miss, and the closer the total gets to π.</figcaption>
-</figure>
 
 ### 2.3 How that maps onto the code
 
