@@ -424,6 +424,17 @@ figure.diagram svg { width: 100%; height: auto; display: block; }
 .d-title     { fill: var(--text); font-family: var(--font-sans); font-size: 14px;
                font-weight: 600; }
 .d-arrow     { fill: var(--border-strong); }
+/* Plotted function curve and the sample points on it. Both carry meaning
+   (they ARE the function being integrated), so they use --brand rather than a
+   decorative stroke, and inherit its dark-mode counterpart automatically. */
+.d-curve     { fill: none; stroke: var(--brand); stroke-width: 2.5;
+               stroke-linejoin: round; stroke-linecap: round; }
+.d-dot       { fill: var(--brand); }
+/* Signed error regions in a quadrature figure: --warn where an approximation
+   overshoots, --note where it falls short. Both are washes behind a stroked
+   curve, so they are decorative fills, not meaning-carrying borders. */
+.d-fill--over  { fill: var(--warn-wash); stroke: var(--warn); stroke-width: 1; }
+.d-fill--under { fill: var(--note-wash); stroke: var(--note); stroke-width: 1; }
 
 figcaption {
   margin-top: var(--sp-2);
