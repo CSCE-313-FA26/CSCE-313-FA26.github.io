@@ -7,6 +7,7 @@ course: "CSCE 313 · Introduction to Computer Systems"
 term: "Fall 2026"
 relates_to: "Lab 6"
 listed: false        # reachable by direct link, not shown in the index
+published: false     # HELD: the page is not built at all. Flip to true to release.
 description: "Complete a TCP client and server, then make the server serve one client after another and let each client send as many messages as it likes."
 ---
 
