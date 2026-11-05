@@ -203,9 +203,7 @@ git commit -m "Activity 7"
 git push
 ```
 
-Push as often as you like; every push is graded and the last one counts. The
-deadline is **11:59 PM tonight**, so an answer you finish after class still
-counts.
+Push as often as you like; every push is graded and the last one counts.
 
 ## 8. If You Finish Early
 
