@@ -10,7 +10,7 @@ released: "Tuesday, November 17, 2026, 9:00 AM CT"
 due: "Friday, December 4, 2026, 11:59 PM CT"
 released_short: "Tue Nov 17, 2026"
 due_short: "Fri Dec 4, 2026, 11:59 PM CT"
-description: "Use Scapy inside a small Docker network to sniff a victim's pings and forge ICMP echo replies that appear to come from the server it is talking to."
+description: "Use Scapy inside a small Docker network to sniff a victim's pings and forge ICMP echo replies from the server it is talking to - then build a detector that catches the forgery."
 ---
 
 <nav class="toc" aria-labelledby="toc-heading" markdown="1">
@@ -37,6 +37,8 @@ By the end of this lab you should be able to:
    it yourself with a reply the victim accepts.
 6. Run a small multi-container network with Docker Compose and find the
    interface that carries its traffic.
+7. Detect the attack from the traffic it produces: recognise that a single ping
+   answered by two replies with different TTLs is a forgery in progress.
 
 ## 2. Background
 
@@ -86,7 +88,24 @@ never have. The victim accepts it, and `ping` prints a reply with `ttl=99`.
 That odd TTL is your proof that the reply the victim "trusted" was written by
 the attacker, not the server.
 
-You will write the attacker.
+In **Part 1** you write the attacker. In **Part 2** you write a detector that
+catches it.
+
+### 2.4 Catching the forgery
+
+The attack leaves a trace. A real `ping` is answered by exactly one host, so each
+request gets **one** reply, and on this one-hop network every legitimate reply to
+the same host carries the **same TTL**. When the attacker joins in, the victim
+receives **two** replies to the same request — the server's real one and the
+forgery — and they **disagree on TTL** (the forged one is 99).
+
+No single host can tell on its own: the victim's kernel just sees two replies,
+and the server never sees the forgery at all. But a monitor that *remembers* each
+reply can. If a second reply answers a request it has already seen answered, and
+its TTL differs from the first, then two different hosts answered one ping — and
+one of them is lying. You cannot always say *which* from the TTL alone, but you
+can say with certainty that a spoofer is on the wire. That is what your detector
+reports.
 
 ## 3. Environment setup
 
@@ -158,8 +177,10 @@ what you pass to Scapy as `iface`.
   requests arrive. **Do not modify.**
 - `victim.py` — pings `10.9.0.5` ten times. **Do not modify.** (You can also
   just run `ping 10.9.0.5` by hand inside the victim.)
-- `attacker.py` — **the file you edit.** It imports Scapy and leaves two blanks
-  for you to fill.
+- `attacker.py` — **Part 1: the attacker you write.** It imports Scapy and
+  leaves two blanks for you to fill.
+- `detector.py` — **Part 2: the detector you write.** It imports Scapy and
+  leaves one blank for you to fill.
 
 ### 4.2 The Scapy you need
 
@@ -185,9 +206,10 @@ send(pkt, verbose=0)
 `store=False` tells it not to keep every packet in memory — you are reacting to
 them, not collecting them.
 
-## 5. To-do
+## 5. Part 1 — write the attacker
 
-You edit **only `attacker.py`**, in the two places marked `YOUR CODE HERE`.
+This lab has two parts. In **Part 1** you edit **`attacker.py`**, in the two
+places marked `YOUR CODE HERE`.
 
 ### 5.1 Write `spoof_pkt(pkt)`
 
@@ -228,13 +250,101 @@ At the bottom of the file, call `sniff` with:
 > reply on this network never has it, so seeing it means your forged packet was
 > accepted.
 
-## 6. Checking your work
+## 6. Part 2 — write the detector
 
-The autograder grades the one thing you write — your `spoof_pkt` handler — by
-importing `attacker.py` with Scapy's `sniff()` and `send()` replaced by stubs,
-then feeding your handler known ICMP packets and inspecting the replies it tries
-to send. **It needs neither Docker nor root**, so you can run it anywhere Python
-and Scapy are installed, including inside the attacker container:
+Now you build the other side. The attacker and the real server both answer the
+victim's ping, so the victim gets two replies that disagree on TTL (see §2.4).
+Your detector watches the traffic and raises the alarm when it sees that.
+
+You edit **`detector.py`**, in the one place marked `YOUR CODE HERE`. The `sniff`
+call and a helper, `report_spoof(pkt)`, are already written for you — **leave
+`report_spoof` alone**; it prints the alert line the grader and your TA look for.
+Your job is to call it at the right moment.
+
+> **Accepted early?** If your repository has no `detector.py` — you accepted
+> before Part 2 was added — create it yourself. It is short; the given
+> scaffolding is at the end of §6.1, and you only fill in `detect`.
+
+### 6.1 Write `detect(pkt)`
+
+`detect` runs once per captured packet, exactly like `spoof_pkt`. When `pkt` is
+an ICMP **echo reply** (`pkt[ICMP].type == 0`):
+
+1. Form the key `(pkt[ICMP].id, pkt[ICMP].seq)` — the request this reply answers.
+2. If you have **not** seen a reply for that key yet, remember this reply's TTL:
+   `seen[key] = pkt[IP].ttl`.
+3. If you **have** seen one and the stored TTL is **different** from this reply's
+   TTL, then one ping has been answered by two hosts with different TTLs — a
+   spoofer is present. Call `report_spoof(pkt)`.
+
+Ignore echo requests and anything that is not an echo reply. The `seen`
+dictionary is given at the top of the file.
+
+```python
+seen = {}                              # given, at the top of the file
+
+key = (pkt[ICMP].id, pkt[ICMP].seq)    # which ping this reply answers
+if key not in seen:
+    seen[key] = pkt[IP].ttl            # first reply: remember its TTL
+elif seen[key] != pkt[IP].ttl:
+    report_spoof(pkt)                  # a second, conflicting reply
+```
+
+Notice there is no magic number here: you never test for `99`. You compare each
+reply against the one you already recorded, so the detector catches a forged
+reply at **any** TTL, not only the one this attacker happens to use.
+
+The given scaffolding of `detector.py`, if you need to recreate it:
+
+```python
+#!/usr/bin/env python3
+from scapy.all import *
+from scapy.arch import get_if_list, get_if_addr
+
+seen = {}
+
+def report_spoof(pkt):
+    # GIVEN - do not modify.
+    print("[!] SPOOFED ECHO REPLY DETECTED  "
+          "id=%d seq=%d ttl=%d src=%s"
+          % (pkt[ICMP].id, pkt[ICMP].seq, pkt[IP].ttl, pkt[IP].src))
+
+def detect(pkt):
+    # YOUR CODE HERE  (see the three steps above)
+    pass
+
+def find_lab_iface(prefix="10.9.0."):
+    for i in get_if_list():
+        try:
+            if get_if_addr(i).startswith(prefix):
+                return i
+        except Exception:
+            pass
+    return None
+
+iface = find_lab_iface() or "br-<run ifconfig to find it>"
+sniff(iface=iface, filter="icmp", prn=detect, store=False, promisc=True)
+```
+
+### 6.2 Run it
+
+1. Start the network and run your attacker in one shell (as in §5.3).
+2. In another shell on the attacker, run the detector: `python3 detector.py`.
+3. Ping from the victim. For every forged reply, the detector prints a
+   **`SPOOFED ECHO REPLY DETECTED`** line naming the id, seq and TTL.
+
+> Which reply the detector flags — the forgery or the server's real one —
+> depends on which arrives first, because from the TTL alone it can tell only
+> that the *two disagree*, not which is honest. Flagging the conflict is the
+> point: it proves a reply the victim trusted was not written by the server.
+
+## 7. Checking your work
+
+The autograder grades the two handlers you write — `spoof_pkt` in `attacker.py`
+and `detect` in `detector.py` — by importing each one with Scapy's `sniff()` and
+`send()` replaced by stubs, then feeding your handler known ICMP packets and
+inspecting what it does. **It needs neither Docker nor root**, so you can run it
+anywhere Python and Scapy are installed, including inside the attacker container:
 
 ```
 python3 tests/grade.py
@@ -244,23 +354,28 @@ It reports, out of 100:
 
 | Check | Points |
 |---|---|
-| `attacker.py` sniffs ICMP and calls your handler | 15 |
-| a ping (echo request) is answered with one echo reply | 25 |
-| the reply is spoofed to come from the pinged host | 20 |
-| the reply uses a different TTL from the request | 20 |
-| the reply copies the ICMP id, seq and payload | 20 |
+| **Part 1 — the attacker** | **70** |
+| `attacker.py` sniffs ICMP and calls your handler | 10 |
+| a ping (echo request) is answered with one echo reply | 15 |
+| the reply is spoofed to come from the pinged host | 15 |
+| the reply uses a different TTL from the request | 15 |
+| the reply copies the ICMP id, seq and payload | 15 |
+| **Part 2 — the detector** | **30** |
+| `detector.py` watches replies and does not flag a real one | 10 |
+| a ping answered by two conflicting replies is flagged | 12 |
+| the detector generalises (any forged TTL, several pings) | 8 |
 
-The live three-container run in §5.3 is how you *see* the attack work; it is not
-re-run by the grader. If `tests/grade.py` gives you 100 but the live demo does
-not show `ttl=99`, the usual cause is the `iface` name in your `sniff` call —
-re-check §3.3.
+The live three-container run (§5.3 and §6.2) is how you *see* the attack and the
+detection work; it is not re-run by the grader. If `tests/grade.py` gives you
+100 but the live demo misbehaves, the usual cause is the `iface` name in your
+`sniff` call — re-check §3.3.
 
-## 7. Deliverables
+## 8. Deliverables
 
-Commit and push your edited `attacker.py`:
+Commit and push your edited `attacker.py` **and `detector.py`**:
 
 ```
-git add attacker.py
+git add attacker.py detector.py
 git commit -m "Lab 7"
 git push
 ```
@@ -268,7 +383,7 @@ git push
 Every push is graded and the last one before the deadline counts. Do not commit
 `server.py`, `victim.py` or `docker-compose.yml` — they are given and unchanged.
 
-## 8. Getting help
+## 9. Getting help
 
 Ask on the course **Discord** or come to office hours. When you ask about the
 live run, say which interface name `ifconfig` showed you and paste the victim's
@@ -276,4 +391,7 @@ live run, say which interface name `ifconfig` showed you and paste the victim's
 
 ## Revision history
 
+- **Nov 18, 2026** — added Part 2, the detector (`detector.py`); rubric is now
+  70 (attack) / 30 (detection). If you accepted on Nov 17, add `detector.py` to
+  your repository — see the note in §6.
 - **Nov 17, 2026** — initial release.
