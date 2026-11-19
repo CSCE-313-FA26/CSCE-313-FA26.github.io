@@ -7,7 +7,6 @@ course: "CSCE 313 · Introduction to Computer Systems"
 term: "Fall 2026"
 relates_to: "Security"
 duration: "15 minutes"
-published: false     # held until release; the page 404s until this is removed
 listed: false        # reachable by direct link, not shown in the index
 description: "Make an RSA key pair with PyCryptodome, then keep a message private the way public-key cryptography does it: encrypt it with the public key so that only the matching private key can read it back."
 ---
